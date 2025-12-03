@@ -802,7 +802,6 @@
   // Firebase Initialisierung
   // ==========================
 
-  // Diesen Block mit DEINEN Werten aus der Firebase-Konsole ersetzen!
   const firebaseConfig = {
     apiKey: "AIzaSyA6R72Jjd7G4XfmBJ_KJvZ9Q6seS9fsikc",
     authDomain: "blutdrucktagebuch-30036.firebaseapp.com",
@@ -817,19 +816,19 @@
   const db = firebase.firestore();
 
   // ==========================
-  // Basis-Variablen
-  // ==========================
-    // ==========================
   // Einfacher Passwort-Schutz
   // ==========================
 
   // HIER DEIN PASSWORT EINTRAGEN:
-  const APP_PASSWORD = "asker-jienrhh-leefrtz";  // <--- diesen Text ändern
+  const APP_PASSWORD = "MeinBlutdruckPasswort123";   // <--- ändern, wie du magst
+  const LOGIN_STORAGE_KEY = "blutdruck_login_ok_v1"; // merkt sich "eingeloggt" im Browser
 
-  const LOGIN_STORAGE_KEY = 'blutdruck_login_ok_v1'; // damit du nicht jedes Mal neu eingeben musst
+  // ==========================
+  // Basis-Variablen
+  // ==========================
 
   const STORAGE_KEY = 'blutdruck_measurements_v1';
-  const SYNC_CODE_KEY = 'blutdruck_sync_code_v1'; // Sync-Code für Cloud-Sync
+  const SYNC_CODE_KEY = 'blutdruck_sync_code_v1';
 
   const measurements = [];
   let bpChart = null;
@@ -838,7 +837,7 @@
   let syncCode = null;
 
   // ==========================
-  // View-Handling (Seitenwechsel)
+  // View-Handling
   // ==========================
 
   const navButtons = document.querySelectorAll('.nav-button');
@@ -866,15 +865,10 @@
   // ==========================
   // DOM-Elemente
   // ==========================
-  const loginOverlay        = document.getElementById('loginOverlay');
-  const loginPasswordInput  = document.getElementById('loginPasswordInput');
-  const loginButton         = document.getElementById('loginButton');
-  const loginError          = document.getElementById('loginError');
 
   const timestampInput = document.getElementById('timestampInput');
   const sysInput       = document.getElementById('sysInput');
   const diaInput       = document.getElementById('diaInput');
-
   const addUpdateBtn   = document.getElementById('addUpdateBtn');
   const cancelEditBtn  = document.getElementById('cancelEditBtn');
   const dataTableBody  = document.querySelector('#dataTable tbody');
@@ -900,7 +894,7 @@
   const saveSyncCodeBtn = document.getElementById('saveSyncCodeBtn');
 
   // ==========================
-  // Datum / Uhrzeit für Eingabe vorbelegen
+  // Datum / Uhrzeit vorbereiten
   // ==========================
 
   function setNowToTimestamp() {
@@ -915,7 +909,7 @@
   }
 
   // ==========================
-  // LocalStorage (Daten im Browser)
+  // LocalStorage
   // ==========================
 
   function saveToLocalStorage() {
@@ -959,64 +953,6 @@
   // Sync-Code in localStorage
   // ==========================
 
-    // ==========================
-  // Login-Logik (Passwort)
-  // ==========================
-
-  function checkStoredLogin() {
-    try {
-      return localStorage.getItem(LOGIN_STORAGE_KEY) === '1';
-    } catch (e) {
-      return false;
-    }
-  }
-
-  function markLoggedIn() {
-    try {
-      localStorage.setItem(LOGIN_STORAGE_KEY, '1');
-    } catch (e) {
-      console.error('Konnte Login-Status nicht speichern:', e);
-    }
-  }
-
-  function unlockApp() {
-  // Login-Overlay ausblenden
-  if (loginOverlay) {
-    loginOverlay.style.display = 'none';
-  }
-  // App anzeigen
-  const appShell = document.querySelector('.app-shell');
-  if (appShell) {
-    appShell.style.display = 'flex';
-  }
-  // Jetzt eigentliche App initialisieren
-  initApp();
-}
-
-
-  function handleLogin() {
-    const value = (loginPasswordInput.value || '').trim();
-    if (value === APP_PASSWORD) {
-      loginError.style.display = 'none';
-      markLoggedIn();
-      unlockApp();
-    } else {
-      loginError.style.display = 'block';
-    }
-  }
-
-  if (loginButton) {
-    loginButton.addEventListener('click', handleLogin);
-  }
-  if (loginPasswordInput) {
-    loginPasswordInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        handleLogin();
-      }
-    });
-  }
-
-    
   function loadSyncCodeFromLocal() {
     try {
       const stored = localStorage.getItem(SYNC_CODE_KEY);
@@ -1131,7 +1067,7 @@
       const data = docSnap.data();
       if (!data || !Array.isArray(data.measurements)) return;
 
-      measurements.length = 0; // vorhandene Daten überschreiben
+      measurements.length = 0;
       data.measurements.forEach(m => {
         if (m &&
             typeof m.timestampRaw === 'string' &&
@@ -1144,7 +1080,7 @@
 
       measurements.sort((a, b) => a.timestampRaw.localeCompare(b.timestampRaw));
       renderAll();
-      saveToLocalStorage(); // lokalen Cache aktualisieren
+      saveToLocalStorage();
       console.log('Daten aus Cloud geladen.');
     } catch (e) {
       console.error('Fehler beim Laden aus der Cloud:', e);
@@ -1154,7 +1090,6 @@
 
   async function saveToCloud() {
     if (!syncCode) {
-      // Kein Sync-Code -> nicht in die Cloud schreiben
       return;
     }
 
@@ -1170,7 +1105,7 @@
   }
 
   // ==========================
-  // Gemeinsame Persistenz-Funktion
+  // Gemeinsame Persistenz
   // ==========================
 
   function persistData() {
@@ -1178,7 +1113,6 @@
     if (fileHandle) {
       saveToJsonFile();
     }
-    // Auch in die Cloud schreiben (falls Sync-Code gesetzt)
     saveToCloud();
   }
 
@@ -1206,45 +1140,9 @@
       syncCode = val;
       saveSyncCodeToLocal();
       alert('Sync-Code gespeichert. Daten werden jetzt mit der Cloud synchronisiert.');
-
-      // Nach dem Setzen des Codes aktuelle Daten aus der Cloud laden
       loadFromCloud();
     });
   }
-
-  // ==========================
-  // Seite starten
-  // ==========================
-
-    // App-Start in eigene Funktion ausgelagert,
-  // damit wir sie erst nach erfolgreichem Login aufrufen
-  function initApp() {
-    loadFromLocalStorage();
-    loadSyncCodeFromLocal();
-    renderAll();
-    setNowToTimestamp();
-    if (timestampInput) timestampInput.focus();
-
-    if (syncCode) {
-      loadFromCloud();
-    }
-  }
-
-  window.addEventListener('load', () => {
-    // Schon eingeloggt auf diesem Gerät?
-    if (checkStoredLogin()) {
-      unlockApp();
-    } else {
-      // Login anzeigen, App darunter ist verdeckt
-      if (loginOverlay) {
-        loginOverlay.style.display = 'flex';
-      }
-      if (loginPasswordInput) {
-        loginPasswordInput.focus();
-      }
-    }
-  });
-
 
   // ==========================
   // Formular / Eingabe
@@ -1323,16 +1221,15 @@
       clearLocalStorage();
       renderAll();
       if (fileHandle) {
-        await saveToJsonFile(); // schreibt "[]"
+        await saveToJsonFile();
       }
       resetForm();
-      // Auch in der Cloud leeren
       saveToCloud();
     });
   }
 
   // ==========================
-  // Details-Tabelle (absteigend sortiert)
+  // Details-Tabelle (absteigend)
   // ==========================
 
   function renderDetailsTable() {
@@ -1350,21 +1247,17 @@
     }
 
     const n = measurements.length;
-
-    // Kopie absteigend nach timestampRaw sortieren (neueste zuerst)
     const sorted = measurements.slice().sort((a, b) =>
       b.timestampRaw.localeCompare(a.timestampRaw)
     );
 
     sorted.forEach((m, idx) => {
       const tr = document.createElement('tr');
-
       const isHigh = m.sys >= 140 || m.dia >= 90;
       if (isHigh) {
         tr.classList.add('row-high');
       }
 
-      // Neueste Messung bekommt die höchste Nummer
       const displayIndex = n - idx;
 
       const tdIndex = document.createElement('td');
@@ -1388,7 +1281,6 @@
       const editButton = document.createElement('button');
       editButton.textContent = 'Bearbeiten';
       editButton.className = 'btn btn-outline btn-sm';
-      // passenden Index im Original-Array suchen
       const originalIndex = measurements.indexOf(m);
       editButton.onclick = () => startEdit(originalIndex);
 
@@ -1435,7 +1327,7 @@
   }
 
   // ==========================
-  // Übersicht (letzte 5 & Mittelwerte)
+  // Übersicht
   // ==========================
 
   function renderOverview() {
@@ -1493,7 +1385,7 @@
   }
 
   // ==========================
-  // Trend-Berechnung für Diagramm
+  // Trend-Berechnung
   // ==========================
 
   function calcTrend(values) {
@@ -1672,22 +1564,13 @@
   // Timestamp-Parser für Import
   // ==========================
 
-  // Akzeptiert z.B.:
-  // - "dd.mm.yy hh:mm" oder "dd.mm.yyyy hh:mm"
-  // - "yyyy-mm-dd hh:mm" oder "yyyy-mm-ddThh:mm"
-  // Speichert immer im Format:
-  //   raw:     "YYYY-MM-DDTHH:MM"
-  //   display: "YYYY-MM-DD HH:MM"
   function parseExcelTimestamp(str) {
     if (typeof str !== 'string') return null;
     str = str.trim();
     if (!str) return null;
 
-    // "T" in Leerzeichen wandeln, damit "2025-12-03T10:30"
-    // und "2025-12-03 10:30" gleich behandelt werden
     let candidate = str.replace('T', ' ');
 
-    // 1) ISO-ähnlich: "yyyy-mm-dd hh:mm"
     let isoMatch = candidate.match(/^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2})$/);
     if (isoMatch) {
       const [, yyyy, mm, dd, hh, mi] = isoMatch;
@@ -1696,7 +1579,6 @@
       return { raw, display };
     }
 
-    // 2) "dd.mm.yy" oder "dd.mm.yyyy"
     const parts = candidate.split(' ');
     if (parts.length < 2) return null;
 
@@ -1710,7 +1592,6 @@
     dd = dd.padStart(2, '0');
     mm = mm.padStart(2, '0');
 
-    // Zwei­stellige Jahreszahl → 20xx
     if (yy.length === 2) {
       yy = '20' + yy;
     } else if (yy.length === 4) {
@@ -1827,7 +1708,6 @@
         return;
       }
 
-      // NICHT mehr Kopfzeile überspringen – alle Zeilen werden versucht zu importieren
       const dataLines = lines;
       const sample = dataLines[0];
       const delimiter = sample.indexOf(';') !== -1 ? ';' : ',';
@@ -1883,7 +1763,48 @@
     renderOverview();
     updateChart();
   }
+
+  // ==========================
+  // App-Initialisierung & Passwort
+  // ==========================
+
+  function initApp() {
+    loadFromLocalStorage();
+    loadSyncCodeFromLocal();
+    renderAll();
+    setNowToTimestamp();
+    if (timestampInput) timestampInput.focus();
+    if (syncCode) {
+      loadFromCloud();
+    }
+  }
+
+  function requirePasswordAndInit() {
+    try {
+      if (localStorage.getItem(LOGIN_STORAGE_KEY) === '1') {
+        initApp();
+        return;
+      }
+    } catch (e) {
+      console.error('Konnte Login-Status nicht lesen:', e);
+    }
+
+    const entered = prompt('Bitte Passwort eingeben:');
+    if (entered === APP_PASSWORD) {
+      try {
+        localStorage.setItem(LOGIN_STORAGE_KEY, '1');
+      } catch (e) {
+        console.error('Konnte Login-Status nicht speichern:', e);
+      }
+      initApp();
+    } else {
+      alert('Falsches Passwort. Die Seite bleibt gesperrt.');
+    }
+  }
+
+  window.addEventListener('load', requirePasswordAndInit);
 </script>
+
 
 </body>
 </html>
