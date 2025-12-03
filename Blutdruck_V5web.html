@@ -49,15 +49,16 @@
     }
 
     .app-shell {
-      width: 100%;
-      max-width: 1400px;
-      border-radius: 26px;
-      background: linear-gradient(145deg, #f9fafb, #e2f3ff);
-      border: 1px solid rgba(148, 163, 184, 0.7);
-      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.25);
-      overflow: hidden;
-      display: flex;
-    }
+  width: 100%;
+  max-width: 1400px;
+  border-radius: 26px;
+  background: linear-gradient(145deg, #f9fafb, #e2f3ff);
+  border: 1px solid rgba(148, 163, 184, 0.7);
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.25);
+  overflow: hidden;
+  display: none; /* <--- WICHTIG: zuerst verstecken */
+}
+
 
     .layout {
       display: flex;
@@ -979,11 +980,19 @@
   }
 
   function unlockApp() {
-    if (loginOverlay) {
-      loginOverlay.style.display = 'none';
-    }
-    initApp();
+  // Login-Overlay ausblenden
+  if (loginOverlay) {
+    loginOverlay.style.display = 'none';
   }
+  // App anzeigen
+  const appShell = document.querySelector('.app-shell');
+  if (appShell) {
+    appShell.style.display = 'flex';
+  }
+  // Jetzt eigentliche App initialisieren
+  initApp();
+}
+
 
   function handleLogin() {
     const value = (loginPasswordInput.value || '').trim();
