@@ -1,0 +1,1717 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Blutdruck-Tagebuch</title>
+
+  <!-- Firebase SDKs: BITTE GENAU SO EINBAUEN -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Excel-Parser (SheetJS) -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <style>
+    :root {
+      /* HELLERES, KÜHLES FARBSCHEMA */
+      --bg-gradient-start: #0f172a;
+      --bg-gradient-end: #1e293b;
+      --surface: #e5f3ff;
+      --surface-muted: #f1f5f9;
+      --border-subtle: rgba(148, 163, 184, 0.5);
+      --accent: #38bdf8;
+      --accent-soft: rgba(56, 189, 248, 0.15);
+      --accent-strong: #0ea5e9;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --danger: #dc2626;
+      --danger-soft: rgba(248, 113, 113, 0.18);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+        "Segoe UI", sans-serif;
+      color: var(--text-main);
+      background: radial-gradient(circle at top, #e0f2fe 0, #cbd5f5 45%, #93c5fd 100%);
+      display: flex;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .app-shell {
+      width: 100%;
+      max-width: 1400px;
+      border-radius: 26px;
+      background: linear-gradient(145deg, #f9fafb, #e2f3ff);
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.25);
+      overflow: hidden;
+      display: flex;
+    }
+
+    .layout {
+      display: flex;
+      width: 100%;
+    }
+
+    /* Sidebar links */
+
+    .sidebar {
+      width: 220px;
+      background: linear-gradient(180deg, #0f172a, #1f2937);
+      color: #e5e7eb;
+      padding: 18px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+
+    .logo-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 999px;
+      background: radial-gradient(circle, #e0f2fe, #38bdf8);
+      box-shadow: 0 0 18px rgba(56, 189, 248, 0.9);
+    }
+
+    .sidebar-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .sidebar-subtitle {
+      font-size: 0.78rem;
+      color: #9ca3af;
+    }
+
+    .nav-group-label {
+      margin-top: 14px;
+      margin-bottom: 6px;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #6b7280;
+    }
+
+    .nav-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .nav-button {
+      border-radius: 999px;
+      border: none;
+      padding: 8px 12px;
+      font-size: 0.82rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      background: transparent;
+      color: #e5e7eb;
+      transition: all 0.18s ease-out;
+    }
+
+    .nav-button span.label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-button span.dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: transparent;
+    }
+
+    .nav-button.active {
+      background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+      color: #0b1120;
+      box-shadow: 0 10px 24px rgba(56, 189, 248, 0.45);
+    }
+
+    .nav-button.active span.dot {
+      background: #0b1120;
+    }
+
+    .nav-button:hover:not(.active) {
+      background: rgba(31, 41, 55, 0.8);
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      font-size: 0.72rem;
+      color: #9ca3af;
+    }
+
+    .sidebar-footer strong {
+      color: #e5e7eb;
+    }
+
+    /* Main content */
+
+    .main {
+      flex: 1;
+      padding: 18px 18px 22px;
+      background: linear-gradient(135deg, #f9fafb, #e5f3ff);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    header.main-header {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .content {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      flex: 1;
+    }
+
+    .view {
+      display: none;
+      animation: fadeIn 0.22s ease-out;
+    }
+
+    .view.active {
+      display: block;
+    }
+
+    .card {
+      background: var(--surface);
+      border-radius: 18px;
+      border: 1px solid var(--border-subtle);
+      padding: 12px 14px 14px;
+      box-shadow: 0 14px 30px rgba(148, 163, 184, 0.4);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 8px;
+      gap: 8px;
+    }
+
+    .card-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .card-subtitle {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .pill {
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: var(--surface-muted);
+      border: 1px solid rgba(148, 163, 184, 0.8);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .pill-accent {
+      background: var(--accent-soft);
+      border-color: rgba(56, 189, 248, 0.6);
+      color: var(--accent-strong);
+    }
+
+    .overview-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 2fr) minmax(0, 1.4fr);
+      gap: 10px;
+    }
+
+    @media (max-width: 900px) {
+      .app-shell {
+        flex-direction: column;
+      }
+      .sidebar {
+        width: 100%;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .nav-list {
+        flex-direction: row;
+      }
+      .main {
+        padding: 14px;
+      }
+      .overview-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .stats-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .stat-chip {
+      flex: 1 1 120px;
+      min-width: 120px;
+      padding: 8px 10px;
+      border-radius: 14px;
+      background: var(--surface-muted);
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .stat-label {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .stat-main {
+      display: flex;
+      align-items: baseline;
+    }
+
+    .stat-value {
+      font-size: 1.05rem;
+      font-weight: 600;
+    }
+
+    .stat-unit {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-left: 4px;
+    }
+
+    /* Tabellen */
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+    }
+
+    thead {
+      background: var(--surface-muted);
+    }
+
+    th, td {
+      padding: 6px 8px;
+      text-align: left;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.6);
+    }
+
+    th {
+      font-weight: 500;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    tbody tr:hover {
+      background: #e0f2fe;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .table-muted {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      text-align: center;
+      padding: 10px 0;
+    }
+
+    /* Grenzwerte rot markieren */
+    .row-high {
+      background: var(--danger-soft) !important;
+    }
+
+    .row-high td.value-high {
+      color: var(--danger);
+      font-weight: 600;
+    }
+
+    /* Buttons */
+
+    .btn {
+      border-radius: 999px;
+      border: none;
+      padding: 7px 14px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.18s ease-out;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+      color: #0b1120;
+      box-shadow: 0 8px 18px rgba(56, 189, 248, 0.4);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 28px rgba(56, 189, 248, 0.55);
+    }
+
+    .btn-outline {
+      background: var(--surface-muted);
+      color: var(--text-main);
+      border: 1px solid rgba(148, 163, 184, 0.9);
+    }
+
+    .btn-outline:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.5);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid transparent;
+      padding-inline: 10px;
+    }
+
+    .btn-ghost:hover {
+      color: var(--accent);
+    }
+
+    .btn-sm {
+      padding: 4px 10px;
+      font-size: 0.75rem;
+    }
+
+    .btn-danger {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+    }
+
+    .btn-danger:hover {
+      box-shadow: 0 10px 24px rgba(248, 113, 113, 0.4);
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    /* Formular */
+
+    .form-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+      align-items: flex-end;
+      flex-wrap: wrap;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    label {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    input[type="datetime-local"],
+    input[type="number"] {
+      background: #ffffff;
+      border-radius: 12px;
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      padding: 6px 10px;
+      font-size: 0.8rem;
+      color: var(--text-main);
+      min-width: 120px;
+    }
+
+    input[type="datetime-local"]:focus,
+    input[type="number"]:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.5);
+    }
+
+    /* Diagramm – Vollbreite im Content */
+    .chart-container {
+      margin-top: 10px;
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 12px;
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      width: 100%;
+      height: 280px;  /* Mehr Höhe für bessere Lesbarkeit */
+    }
+
+    #bpChart {
+      width: 100% !important;
+      height: 100% !important;
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(4px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <div class="layout">
+      <!-- Sidebar links -->
+      <aside class="sidebar">
+        <div>
+          <div class="sidebar-header">
+            <div class="logo-dot"></div>
+            <div>
+              <div class="sidebar-title">Blutdruck</div>
+              <div class="sidebar-subtitle">Kleine iOS-Style App</div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="nav-group-label">Ansichten</div>
+          <div class="nav-list">
+            <button class="nav-button active" data-view="overview">
+              <span class="label">
+                <span class="dot"></span>
+                Übersicht
+              </span>
+            </button>
+            <button class="nav-button" data-view="details">
+              <span class="label">
+                <span class="dot"></span>
+                Details & Tabelle
+              </span>
+            </button>
+          </div>
+        </div>
+        <div class="sidebar-footer">
+          <strong>Tipp:</strong> Daten bleiben im Browser gespeichert.
+        </div>
+      </aside>
+
+      <!-- Hauptbereich -->
+      <div class="main">
+        <header class="main-header"></header>
+        <main class="content">
+          <!-- ÜBERSICHT -->
+          <section id="view-overview" class="view active">
+            <!-- Eingabe-Formular -->
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">Neue Messung</div>
+                  <div class="card-subtitle">Zeitstempel, systolischer & diastolischer Wert</div>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="timestampInput">Zeitstempel</label>
+                  <input type="datetime-local" id="timestampInput" />
+                </div>
+                <div class="form-group">
+                  <label for="sysInput">Systolisch (mmHg)</label>
+                  <input type="number" id="sysInput" min="50" max="250" />
+                </div>
+                <div class="form-group">
+                  <label for="diaInput">Diastolisch (mmHg)</label>
+                  <input type="number" id="diaInput" min="30" max="150" />
+                </div>
+                <div class="form-group">
+                  <label>&nbsp;</label>
+                  <div class="btn-row">
+                    <button id="addUpdateBtn" class="btn btn-primary">Messung hinzufügen</button>
+                    <button id="cancelEditBtn" class="btn btn-ghost btn-sm" style="display:none;">Bearbeitung abbrechen</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Diagramm über volle Content-Breite -->
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">Diagramm</div>
+                  <div class="card-subtitle">Verlauf & Trendlinien</div>
+                </div>
+              </div>
+              <div class="chart-container">
+                <canvas id="bpChart"></canvas>
+              </div>
+            </div>
+
+            <div class="overview-grid">
+              <!-- Letzte 5 Messungen -->
+              <div class="card">
+                <div class="card-header">
+                  <div>
+                    <div class="card-title">Letzte Messungen</div>
+                    <div class="card-subtitle">Die fünf aktuellsten Einträge</div>
+                  </div>
+                  <span class="pill pill-accent" id="totalCountPill">0 Messungen</span>
+                </div>
+                <div style="overflow-x:auto;">
+                  <table id="last5Table">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Zeitstempel</th>
+                        <th>Sys</th>
+                        <th>Dia</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr><td colspan="4" class="table-muted">Noch keine Messungen erfasst.</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Mittelwerte -->
+              <div class="card">
+                <div class="card-header">
+                  <div>
+                    <div class="card-title">Mittelwerte</div>
+                    <div class="card-subtitle">Über alle gespeicherten Messungen</div>
+                  </div>
+                </div>
+                <div class="stats-row">
+                  <div class="stat-chip">
+                    <div class="stat-label">Mittelwert Systolisch</div>
+                    <div class="stat-main">
+                      <span class="stat-value" id="avgSys">–</span>
+                      <span class="stat-unit">mmHg</span>
+                    </div>
+                  </div>
+                  <div class="stat-chip">
+                    <div class="stat-label">Mittelwert Diastolisch</div>
+                    <div class="stat-main">
+                      <span class="stat-value" id="avgDia">–</span>
+                      <span class="stat-unit">mmHg</span>
+                    </div>
+                  </div>
+                  <div class="stat-chip">
+                    <div class="stat-label">Anzahl Messungen</div>
+                    <div class="stat-main">
+                      <span class="stat-value" id="totalCount">0</span>
+                      <span class="stat-unit">Einträge</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- DETAILS -->
+          <section id="view-details" class="view">
+            <!-- Speichern / JSON-Datei -->
+            <div class="card">
+            <div class="card-header">
+                <div>
+                <div class="card-title">Speicherung & Sync</div>
+                <div class="card-subtitle">Browser, optionale JSON-Datei & Cloud-Synchronisation</div>
+                </div>
+            </div>
+            <div class="form-row" style="margin-bottom:0; align-items:flex-end;">
+                <div class="form-group">
+                <label for="syncCodeInput">Sync-Code</label>
+                <input type="text" id="syncCodeInput" placeholder="z.B. MEINBLUTDRUCK2025" />
+                </div>
+                <button id="saveSyncCodeBtn" class="btn btn-outline btn-sm">Sync-Code speichern</button>
+
+                <button id="connectFileBtn" class="btn btn-outline btn-sm">JSON-Datei auswählen / erstellen</button>
+                <span id="fileStatus" class="card-subtitle">Keine JSON-Datei verbunden.</span>
+            </div>
+            </div>
+
+
+            <!-- Vollständige Tabelle + Import/Export + Alles löschen -->
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">Alle Messungen</div>
+                  <div class="card-subtitle">Volle Liste mit Bearbeitung & Import/Export</div>
+                </div>
+                <div class="btn-row">
+                  <button id="exportJsonBtn" class="btn btn-outline btn-sm">JSON Export</button>
+                  <button id="exportCsvBtn" class="btn btn-outline btn-sm">CSV Export</button>
+                  <button id="importExcelBtn" class="btn btn-outline btn-sm">Excel Import</button>
+                  <button id="importCsvBtn" class="btn btn-outline btn-sm">CSV Import</button>
+                  <button id="clearAllBtn" class="btn btn-danger btn-sm">Alle Daten löschen</button>
+                  <input type="file" id="excelFileInput" accept=".xlsx,.xls" style="display:none;">
+                  <input type="file" id="csvFileInput" accept=".csv" style="display:none;">
+                </div>
+              </div>
+              <div style="overflow-x:auto;">
+                <table id="dataTable">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Zeitstempel</th>
+                      <th>Sys</th>
+                      <th>Dia</th>
+                      <th>Aktionen</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr><td colspan="5" class="table-muted">Noch keine Messungen erfasst.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  // ==========================
+  // Firebase Initialisierung
+  // ==========================
+
+  // Diesen Block mit DEINEN Werten aus der Firebase-Konsole ersetzen!
+  const firebaseConfig = {
+    apiKey: "AIzaSyA6R72Jjd7G4XfmBJ_KJvZ9Q6seS9fsikc",
+    authDomain: "blutdrucktagebuch-30036.firebaseapp.com",
+    projectId: "blutdrucktagebuch-30036",
+    storageBucket: "blutdrucktagebuch-30036.firebasestorage.app",
+    messagingSenderId: "581659987028",
+    appId: "1:581659987028:web:7e6f8e4a46e945af9071c1",
+    measurementId: "G-LN5N63RZG6"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  // ==========================
+  // Basis-Variablen
+  // ==========================
+
+  const STORAGE_KEY = 'blutdruck_measurements_v1';
+  const SYNC_CODE_KEY = 'blutdruck_sync_code_v1'; // Sync-Code für Cloud-Sync
+
+  const measurements = [];
+  let bpChart = null;
+  let editIndex = null;
+  let fileHandle = null;
+  let syncCode = null;
+
+  // ==========================
+  // View-Handling (Seitenwechsel)
+  // ==========================
+
+  const navButtons = document.querySelectorAll('.nav-button');
+  const views = {
+    overview: document.getElementById('view-overview'),
+    details: document.getElementById('view-details'),
+  };
+
+  navButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const view = btn.getAttribute('data-view');
+      setActiveView(view);
+    });
+  });
+
+  function setActiveView(viewName) {
+    navButtons.forEach(b => {
+      b.classList.toggle('active', b.getAttribute('data-view') === viewName);
+    });
+    Object.entries(views).forEach(([name, el]) => {
+      el.classList.toggle('active', name === viewName);
+    });
+  }
+
+  // ==========================
+  // DOM-Elemente
+  // ==========================
+
+  const timestampInput = document.getElementById('timestampInput');
+  const sysInput       = document.getElementById('sysInput');
+  const diaInput       = document.getElementById('diaInput');
+
+  const addUpdateBtn   = document.getElementById('addUpdateBtn');
+  const cancelEditBtn  = document.getElementById('cancelEditBtn');
+  const dataTableBody  = document.querySelector('#dataTable tbody');
+  const last5TableBody = document.querySelector('#last5Table tbody');
+  const chartCanvas    = document.getElementById('bpChart');
+
+  const exportJsonBtn  = document.getElementById('exportJsonBtn');
+  const exportCsvBtn   = document.getElementById('exportCsvBtn');
+  const connectFileBtn = document.getElementById('connectFileBtn');
+  const fileStatusSpan = document.getElementById('fileStatus');
+  const importExcelBtn = document.getElementById('importExcelBtn');
+  const excelFileInput = document.getElementById('excelFileInput');
+  const importCsvBtn   = document.getElementById('importCsvBtn');
+  const csvFileInput   = document.getElementById('csvFileInput');
+  const clearAllBtn    = document.getElementById('clearAllBtn');
+
+  const avgSysSpan     = document.getElementById('avgSys');
+  const avgDiaSpan     = document.getElementById('avgDia');
+  const totalCountSpan = document.getElementById('totalCount');
+  const totalCountPill = document.getElementById('totalCountPill');
+
+  const syncCodeInput   = document.getElementById('syncCodeInput');
+  const saveSyncCodeBtn = document.getElementById('saveSyncCodeBtn');
+
+  // ==========================
+  // Datum / Uhrzeit für Eingabe vorbelegen
+  // ==========================
+
+  function setNowToTimestamp() {
+    const now = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    const yyyy = now.getFullYear();
+    const mm   = pad(now.getMonth() + 1);
+    const dd   = pad(now.getDate());
+    const hh   = pad(now.getHours());
+    const mi   = pad(now.getMinutes());
+    timestampInput.value = `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
+  }
+
+  // ==========================
+  // LocalStorage (Daten im Browser)
+  // ==========================
+
+  function saveToLocalStorage() {
+    try {
+      const json = JSON.stringify(measurements);
+      localStorage.setItem(STORAGE_KEY, json);
+    } catch (e) {
+      console.error('Fehler beim Speichern in localStorage:', e);
+    }
+  }
+
+  function clearLocalStorage() {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch (e) {
+      console.error('Fehler beim Löschen aus localStorage:', e);
+    }
+  }
+
+  function loadFromLocalStorage() {
+    try {
+      const json = localStorage.getItem(STORAGE_KEY);
+      if (!json) return;
+      const arr = JSON.parse(json);
+      if (Array.isArray(arr)) {
+        arr.forEach(m => {
+          if (m && typeof m.timestampRaw === 'string' &&
+              typeof m.timestamp === 'string' &&
+              typeof m.sys === 'number' &&
+              typeof m.dia === 'number') {
+            measurements.push(m);
+          }
+        });
+      }
+    } catch (e) {
+      console.error('Fehler beim Laden aus localStorage:', e);
+    }
+  }
+
+  // ==========================
+  // Sync-Code in localStorage
+  // ==========================
+
+  function loadSyncCodeFromLocal() {
+    try {
+      const stored = localStorage.getItem(SYNC_CODE_KEY);
+      if (stored) {
+        syncCode = stored;
+        if (syncCodeInput) {
+          syncCodeInput.value = syncCode;
+        }
+      }
+    } catch (e) {
+      console.error('Fehler beim Laden des Sync-Codes:', e);
+    }
+  }
+
+  function saveSyncCodeToLocal() {
+    try {
+      if (syncCode) {
+        localStorage.setItem(SYNC_CODE_KEY, syncCode);
+      } else {
+        localStorage.removeItem(SYNC_CODE_KEY);
+      }
+    } catch (e) {
+      console.error('Fehler beim Speichern des Sync-Codes:', e);
+    }
+  }
+
+  // ==========================
+  // File System Access API (optionale JSON-Datei)
+  // ==========================
+
+  async function connectJsonFile() {
+    if (!window.showSaveFilePicker) {
+      alert('Dein Browser unterstützt diese Dateifunktion nicht. Bitte nutze Chrome oder Edge in einer sicheren Umgebung (https/localhost).');
+      return;
+    }
+
+    try {
+      const handle = await window.showSaveFilePicker({
+        suggestedName: 'blutdruck.json',
+        types: [
+          {
+            description: 'JSON-Datei',
+            accept: { 'application/json': ['.json'] }
+          }
+        ]
+      });
+
+      fileHandle = handle;
+      fileStatusSpan.textContent = 'Verbunden mit: ' + (handle.name || 'blutdruck.json');
+
+      // Vorhandene Datei einlesen
+      try {
+        const file = await fileHandle.getFile();
+        if (file.size > 0) {
+          const text = await file.text();
+          const arr = JSON.parse(text);
+          if (Array.isArray(arr)) {
+            measurements.length = 0;
+            arr.forEach(m => {
+              if (m && typeof m.timestampRaw === 'string' &&
+                  typeof m.timestamp === 'string' &&
+                  typeof m.sys === 'number' &&
+                  typeof m.dia === 'number') {
+                measurements.push(m);
+              }
+            });
+            measurements.sort((a, b) => a.timestampRaw.localeCompare(b.timestampRaw));
+            renderAll();
+            saveToLocalStorage();
+          }
+        }
+      } catch (e) {
+        console.error('Fehler beim Lesen aus der JSON-Datei:', e);
+      }
+
+      persistData();
+    } catch (e) {
+      if (e.name === 'AbortError') return;
+      console.error('Fehler beim Auswählen/Erstellen der JSON-Datei:', e);
+    }
+  }
+
+  async function saveToJsonFile() {
+    if (!fileHandle) return;
+    try {
+      const writable = await fileHandle.createWritable();
+      await writable.write(JSON.stringify(measurements, null, 2));
+      await writable.close();
+    } catch (e) {
+      console.error('Fehler beim Schreiben in die JSON-Datei:', e);
+    }
+  }
+
+  // ==========================
+  // Cloud-Speicher (Firestore)
+  // ==========================
+
+  async function loadFromCloud() {
+    if (!syncCode) {
+      console.log('Kein Sync-Code gesetzt, überspringe Cloud-Load.');
+      return;
+    }
+
+    try {
+      const docRef = db.collection('measurements').doc(syncCode);
+      const docSnap = await docRef.get();
+      if (!docSnap.exists) {
+        console.log('Noch keine Cloud-Daten für diesen Sync-Code.');
+        return;
+      }
+
+      const data = docSnap.data();
+      if (!data || !Array.isArray(data.measurements)) return;
+
+      measurements.length = 0; // vorhandene Daten überschreiben
+      data.measurements.forEach(m => {
+        if (m &&
+            typeof m.timestampRaw === 'string' &&
+            typeof m.timestamp === 'string' &&
+            typeof m.sys === 'number' &&
+            typeof m.dia === 'number') {
+          measurements.push(m);
+        }
+      });
+
+      measurements.sort((a, b) => a.timestampRaw.localeCompare(b.timestampRaw));
+      renderAll();
+      saveToLocalStorage(); // lokalen Cache aktualisieren
+      console.log('Daten aus Cloud geladen.');
+    } catch (e) {
+      console.error('Fehler beim Laden aus der Cloud:', e);
+      alert('Fehler beim Laden aus der Cloud. Details in der Konsole.');
+    }
+  }
+
+  async function saveToCloud() {
+    if (!syncCode) {
+      // Kein Sync-Code -> nicht in die Cloud schreiben
+      return;
+    }
+
+    try {
+      const docRef = db.collection('measurements').doc(syncCode);
+      await docRef.set({
+        measurements: measurements
+      });
+      console.log('Daten in Cloud gespeichert.');
+    } catch (e) {
+      console.error('Fehler beim Speichern in der Cloud:', e);
+    }
+  }
+
+  // ==========================
+  // Gemeinsame Persistenz-Funktion
+  // ==========================
+
+  function persistData() {
+    saveToLocalStorage();
+    if (fileHandle) {
+      saveToJsonFile();
+    }
+    // Auch in die Cloud schreiben (falls Sync-Code gesetzt)
+    saveToCloud();
+  }
+
+  // Button: JSON-Datei verbinden
+  if (connectFileBtn) {
+    connectFileBtn.addEventListener('click', () => {
+      connectJsonFile();
+    });
+  }
+
+  // Button: Sync-Code speichern
+  if (saveSyncCodeBtn) {
+    saveSyncCodeBtn.addEventListener('click', () => {
+      const val = (syncCodeInput.value || '').trim();
+      if (!val) {
+        if (!confirm('Leerer Sync-Code – Cloud-Synchronisation wird deaktiviert. Fortfahren?')) {
+          return;
+        }
+        syncCode = null;
+        saveSyncCodeToLocal();
+        alert('Sync-Code entfernt. Daten werden nur lokal gespeichert.');
+        return;
+      }
+
+      syncCode = val;
+      saveSyncCodeToLocal();
+      alert('Sync-Code gespeichert. Daten werden jetzt mit der Cloud synchronisiert.');
+
+      // Nach dem Setzen des Codes aktuelle Daten aus der Cloud laden
+      loadFromCloud();
+    });
+  }
+
+  // ==========================
+  // Seite starten
+  // ==========================
+
+  window.addEventListener('load', () => {
+    loadFromLocalStorage();
+    loadSyncCodeFromLocal();
+    renderAll();
+    setNowToTimestamp();
+    if (timestampInput) timestampInput.focus();
+
+    // Falls es schon einen Sync-Code gibt, gleich Cloud-Daten nachladen
+    if (syncCode) {
+      loadFromCloud();
+    }
+  });
+
+  // ==========================
+  // Formular / Eingabe
+  // ==========================
+
+  if (addUpdateBtn) {
+    addUpdateBtn.addEventListener('click', () => {
+      const tsValue = timestampInput.value;
+      const sys = parseInt(sysInput.value, 10);
+      const dia = parseInt(diaInput.value, 10);
+
+      if (!tsValue) {
+        alert('Bitte einen Zeitstempel eingeben.');
+        timestampInput.focus();
+        return;
+      }
+      if (isNaN(sys) || isNaN(dia)) {
+        alert('Bitte sowohl systolischen als auch diastolischen Wert eingeben.');
+        if (isNaN(sys)) sysInput.focus(); else diaInput.focus();
+        return;
+      }
+
+      const tsDisplay = tsValue.replace('T', ' ');
+
+      if (editIndex === null) {
+        measurements.push({
+          timestampRaw: tsValue,
+          timestamp: tsDisplay,
+          sys,
+          dia
+        });
+      } else {
+        measurements[editIndex] = {
+          timestampRaw: tsValue,
+          timestamp: tsDisplay,
+          sys,
+          dia
+        };
+      }
+
+      measurements.sort((a, b) => a.timestampRaw.localeCompare(b.timestampRaw));
+
+      resetForm();
+      renderAll();
+      persistData();
+    });
+  }
+
+  if (cancelEditBtn) {
+    cancelEditBtn.addEventListener('click', () => {
+      resetForm();
+    });
+  }
+
+  function resetForm() {
+    setNowToTimestamp();
+    sysInput.value = '';
+    diaInput.value = '';
+    editIndex = null;
+    addUpdateBtn.textContent = 'Messung hinzufügen';
+    cancelEditBtn.style.display = 'none';
+    timestampInput.focus();
+  }
+
+  // ==========================
+  // Alle Daten löschen
+  // ==========================
+
+  if (clearAllBtn) {
+    clearAllBtn.addEventListener('click', async () => {
+      if (!confirm('Wirklich alle Messungen löschen? Diese Aktion kann nicht rückgängig gemacht werden.')) {
+        return;
+      }
+      measurements.length = 0;
+      editIndex = null;
+      clearLocalStorage();
+      renderAll();
+      if (fileHandle) {
+        await saveToJsonFile(); // schreibt "[]"
+      }
+      resetForm();
+      // Auch in der Cloud leeren
+      saveToCloud();
+    });
+  }
+
+  // ==========================
+  // Details-Tabelle (absteigend sortiert)
+  // ==========================
+
+  function renderDetailsTable() {
+    dataTableBody.innerHTML = '';
+
+    if (measurements.length === 0) {
+      const tr = document.createElement('tr');
+      const td = document.createElement('td');
+      td.colSpan = 5;
+      td.className = 'table-muted';
+      td.textContent = 'Noch keine Messungen erfasst.';
+      tr.appendChild(td);
+      dataTableBody.appendChild(tr);
+      return;
+    }
+
+    const n = measurements.length;
+
+    // Kopie absteigend nach timestampRaw sortieren (neueste zuerst)
+    const sorted = measurements.slice().sort((a, b) =>
+      b.timestampRaw.localeCompare(a.timestampRaw)
+    );
+
+    sorted.forEach((m, idx) => {
+      const tr = document.createElement('tr');
+
+      const isHigh = m.sys >= 140 || m.dia >= 90;
+      if (isHigh) {
+        tr.classList.add('row-high');
+      }
+
+      // Neueste Messung bekommt die höchste Nummer
+      const displayIndex = n - idx;
+
+      const tdIndex = document.createElement('td');
+      tdIndex.textContent = displayIndex;
+
+      const tdTime = document.createElement('td');
+      tdTime.textContent = m.timestamp;
+
+      const tdSys = document.createElement('td');
+      tdSys.textContent = m.sys;
+      if (isHigh) tdSys.classList.add('value-high');
+
+      const tdDia = document.createElement('td');
+      tdDia.textContent = m.dia;
+      if (isHigh) tdDia.classList.add('value-high');
+
+      const tdActions = document.createElement('td');
+      const btnRow = document.createElement('div');
+      btnRow.className = 'btn-row';
+
+      const editButton = document.createElement('button');
+      editButton.textContent = 'Bearbeiten';
+      editButton.className = 'btn btn-outline btn-sm';
+      // passenden Index im Original-Array suchen
+      const originalIndex = measurements.indexOf(m);
+      editButton.onclick = () => startEdit(originalIndex);
+
+      const deleteButton = document.createElement('button');
+      deleteButton.textContent = 'Löschen';
+      deleteButton.className = 'btn btn-danger btn-sm';
+      deleteButton.onclick = () => deleteMeasurement(originalIndex);
+
+      btnRow.appendChild(editButton);
+      btnRow.appendChild(deleteButton);
+      tdActions.appendChild(btnRow);
+
+      tr.appendChild(tdIndex);
+      tr.appendChild(tdTime);
+      tr.appendChild(tdSys);
+      tr.appendChild(tdDia);
+      tr.appendChild(tdActions);
+      dataTableBody.appendChild(tr);
+    });
+  }
+
+  function startEdit(index) {
+    const m = measurements[index];
+    timestampInput.value = m.timestampRaw;
+    sysInput.value = m.sys;
+    diaInput.value = m.dia;
+    editIndex = index;
+    addUpdateBtn.textContent = 'Messung aktualisieren';
+    cancelEditBtn.style.display = 'inline-block';
+    timestampInput.focus();
+    setActiveView('overview');
+  }
+
+  function deleteMeasurement(index) {
+    if (!confirm('Diese Messung wirklich löschen?')) return;
+    measurements.splice(index, 1);
+    if (editIndex === index) {
+      resetForm();
+    } else if (editIndex !== null && index < editIndex) {
+      editIndex--;
+    }
+    renderAll();
+    persistData();
+  }
+
+  // ==========================
+  // Übersicht (letzte 5 & Mittelwerte)
+  // ==========================
+
+  function renderOverview() {
+    last5TableBody.innerHTML = '';
+    if (measurements.length === 0) {
+      const tr = document.createElement('tr');
+      const td = document.createElement('td');
+      td.colSpan = 4;
+      td.className = 'table-muted';
+      td.textContent = 'Noch keine Messungen erfasst.';
+      tr.appendChild(td);
+      last5TableBody.appendChild(tr);
+    } else {
+      const lastFive = measurements.slice(-5).reverse();
+      lastFive.forEach((m, idx) => {
+        const tr = document.createElement('tr');
+        const isHigh = m.sys >= 140 || m.dia >= 90;
+        if (isHigh) tr.classList.add('row-high');
+
+        const tdIndex = document.createElement('td');
+        tdIndex.textContent = measurements.length - idx;
+
+        const tdTime = document.createElement('td');
+        tdTime.textContent = m.timestamp;
+
+        const tdSys = document.createElement('td');
+        tdSys.textContent = m.sys;
+        if (isHigh) tdSys.classList.add('value-high');
+
+        const tdDia = document.createElement('td');
+        tdDia.textContent = m.dia;
+        if (isHigh) tdDia.classList.add('value-high');
+
+        tr.appendChild(tdIndex);
+        tr.appendChild(tdTime);
+        tr.appendChild(tdSys);
+        tr.appendChild(tdDia);
+        last5TableBody.appendChild(tr);
+      });
+    }
+
+    const n = measurements.length;
+    totalCountSpan.textContent = n;
+    totalCountPill.textContent = `${n} Messung${n === 1 ? '' : 'en'}`;
+
+    if (n === 0) {
+      avgSysSpan.textContent = '–';
+      avgDiaSpan.textContent = '–';
+    } else {
+      const sumSys = measurements.reduce((acc, m) => acc + m.sys, 0);
+      const sumDia = measurements.reduce((acc, m) => acc + m.dia, 0);
+      avgSysSpan.textContent = (sumSys / n).toFixed(1);
+      avgDiaSpan.textContent = (sumDia / n).toFixed(1);
+    }
+  }
+
+  // ==========================
+  // Trend-Berechnung für Diagramm
+  // ==========================
+
+  function calcTrend(values) {
+    const n = values.length;
+    if (n < 2) {
+      return values.slice();
+    }
+
+    let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
+    for (let i = 0; i < n; i++) {
+      const x = i;
+      const y = values[i];
+      sumX += x;
+      sumY += y;
+      sumXY += x * y;
+      sumXX += x * x;
+    }
+    const denominator = n * sumXX - sumX * sumX;
+    let a = 0, b = 0;
+    if (denominator !== 0) {
+      a = (n * sumXY - sumX * sumY) / denominator;
+      b = (sumY - a * sumX) / n;
+    } else {
+      a = 0;
+      b = sumY / n;
+    }
+
+    const trend = [];
+    for (let i = 0; i < n; i++) {
+      trend.push(a * i + b);
+    }
+    return trend;
+  }
+
+  // ==========================
+  // Diagramm
+  // ==========================
+
+  function updateChart() {
+    const labels    = measurements.map(m => m.timestamp);
+    const sysValues = measurements.map(m => m.sys);
+    const diaValues = measurements.map(m => m.dia);
+
+    const sysTrend = calcTrend(sysValues);
+    const diaTrend = calcTrend(diaValues);
+
+    const data = {
+      labels: labels,
+      datasets: [
+        {
+          label: 'Systolisch',
+          data: sysValues,
+          tension: 0.2,
+          fill: false,
+          borderWidth: 2,
+          pointRadius: 4
+        },
+        {
+          label: 'Diastolisch',
+          data: diaValues,
+          tension: 0.2,
+          fill: false,
+          borderWidth: 2,
+          pointRadius: 4
+        },
+        {
+          label: 'Trend Systolisch',
+          data: sysTrend,
+          borderWidth: 1.5,
+          borderDash: [5, 5],
+          pointRadius: 0,
+          fill: false
+        },
+        {
+          label: 'Trend Diastolisch',
+          data: diaTrend,
+          borderWidth: 1.5,
+          borderDash: [5, 5],
+          pointRadius: 0,
+          fill: false
+        }
+      ]
+    };
+
+    const options = {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        x: {
+          title: {
+            display: true,
+            text: 'Zeitstempel'
+          },
+          ticks: {
+            maxRotation: 270,
+            minRotation: 270
+          }
+        },
+        y: {
+          title: {
+            display: true,
+            text: 'Blutdruck (mmHg)'
+          }
+        }
+      },
+      plugins: {
+        legend: {
+          position: 'top'
+        }
+      }
+    };
+
+    if (bpChart) {
+      bpChart.data = data;
+      bpChart.options = options;
+      bpChart.update();
+    } else {
+      bpChart = new Chart(chartCanvas, {
+        type: 'line',
+        data: data,
+        options: options
+      });
+    }
+  }
+
+  // ==========================
+  // Export (JSON / CSV)
+  // ==========================
+
+  function downloadText(filename, text) {
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  if (exportJsonBtn) {
+    exportJsonBtn.addEventListener('click', () => {
+      if (measurements.length === 0) {
+        alert('Keine Daten zum Exportieren.');
+        return;
+      }
+      const json = JSON.stringify(measurements, null, 2);
+      downloadText('blutdruck.json', json);
+    });
+  }
+
+  if (exportCsvBtn) {
+    exportCsvBtn.addEventListener('click', () => {
+      if (measurements.length === 0) {
+        alert('Keine Daten zum Exportieren.');
+        return;
+      }
+      const header = ['timestamp', 'systolisch', 'diastolisch'];
+      const rows = measurements.map(m => [
+        m.timestamp,
+        m.sys,
+        m.dia
+      ]);
+
+      let csv = header.join(';') + '\n';
+      rows.forEach(r => {
+        csv += r.join(';') + '\n';
+      });
+
+      downloadText('blutdruck.csv', csv);
+    });
+  }
+
+  // ==========================
+  // Timestamp-Parser für Import
+  // ==========================
+
+  // Akzeptiert z.B.:
+  // - "dd.mm.yy hh:mm" oder "dd.mm.yyyy hh:mm"
+  // - "yyyy-mm-dd hh:mm" oder "yyyy-mm-ddThh:mm"
+  // Speichert immer im Format:
+  //   raw:     "YYYY-MM-DDTHH:MM"
+  //   display: "YYYY-MM-DD HH:MM"
+  function parseExcelTimestamp(str) {
+    if (typeof str !== 'string') return null;
+    str = str.trim();
+    if (!str) return null;
+
+    // "T" in Leerzeichen wandeln, damit "2025-12-03T10:30"
+    // und "2025-12-03 10:30" gleich behandelt werden
+    let candidate = str.replace('T', ' ');
+
+    // 1) ISO-ähnlich: "yyyy-mm-dd hh:mm"
+    let isoMatch = candidate.match(/^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2})$/);
+    if (isoMatch) {
+      const [, yyyy, mm, dd, hh, mi] = isoMatch;
+      const raw = `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
+      const display = `${yyyy}-${mm}-${dd} ${hh}:${mi}`;
+      return { raw, display };
+    }
+
+    // 2) "dd.mm.yy" oder "dd.mm.yyyy"
+    const parts = candidate.split(' ');
+    if (parts.length < 2) return null;
+
+    const datePart = parts[0];
+    const timePart = parts[1];
+
+    const dParts = datePart.split('.');
+    if (dParts.length !== 3) return null;
+
+    let [dd, mm, yy] = dParts;
+    dd = dd.padStart(2, '0');
+    mm = mm.padStart(2, '0');
+
+    // Zwei­stellige Jahreszahl → 20xx
+    if (yy.length === 2) {
+      yy = '20' + yy;
+    } else if (yy.length === 4) {
+      // ok
+    } else {
+      return null;
+    }
+
+    const tParts = timePart.split(':');
+    if (tParts.length < 2) return null;
+    let [hh, mi] = tParts;
+    hh = hh.padStart(2, '0');
+    mi = mi.padStart(2, '0');
+
+    const raw = `${yy}-${mm}-${dd}T${hh}:${mi}`;
+    const display = `${yy}-${mm}-${dd} ${hh}:${mi}`;
+    return { raw, display };
+  }
+
+  // ==========================
+  // Excel-Import
+  // ==========================
+
+  if (importExcelBtn) {
+    importExcelBtn.addEventListener('click', () => {
+      excelFileInput.value = '';
+      excelFileInput.click();
+    });
+  }
+
+  if (excelFileInput) {
+    excelFileInput.addEventListener('change', handleExcelImport);
+  }
+
+  function handleExcelImport(evt) {
+    const file = evt.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const data = e.target.result;
+      const workbook = XLSX.read(data, { type: 'binary' });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+
+      const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: false });
+
+      let imported = 0;
+
+      for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        if (!row || row.length < 3) continue;
+
+        const tsStr  = row[0];
+        const sysStr = row[1];
+        const diaStr = row[2];
+
+        if (!tsStr || !sysStr || !diaStr) continue;
+
+        const parsedTs = parseExcelTimestamp(tsStr);
+        if (!parsedTs) continue;
+
+        const sys = parseInt(sysStr, 10);
+        const dia = parseInt(diaStr, 10);
+        if (isNaN(sys) || isNaN(dia)) continue;
+
+        measurements.push({
+          timestampRaw: parsedTs.raw,
+          timestamp: parsedTs.display,
+          sys,
+          dia
+        });
+        imported++;
+      }
+
+      if (imported === 0) {
+        alert('Es wurden keine gültigen Messungen aus der Excel-Datei gelesen.');
+        return;
+      }
+
+      measurements.sort((a, b) => a.timestampRaw.localeCompare(b.timestampRaw));
+      renderAll();
+      persistData();
+    };
+
+    reader.readAsBinaryString(file);
+  }
+
+  // ==========================
+  // CSV-Import
+  // ==========================
+
+  if (importCsvBtn) {
+    importCsvBtn.addEventListener('click', () => {
+      csvFileInput.value = '';
+      csvFileInput.click();
+    });
+  }
+
+  if (csvFileInput) {
+    csvFileInput.addEventListener('change', handleCsvImport);
+  }
+
+  function handleCsvImport(evt) {
+    const file = evt.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const text = e.target.result;
+      const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
+      if (lines.length === 0) {
+        alert('Die CSV-Datei ist leer.');
+        return;
+      }
+
+      // NICHT mehr Kopfzeile überspringen – alle Zeilen werden versucht zu importieren
+      const dataLines = lines;
+      const sample = dataLines[0];
+      const delimiter = sample.indexOf(';') !== -1 ? ';' : ',';
+
+      let imported = 0;
+
+      for (let i = 0; i < dataLines.length; i++) {
+        const line = dataLines[i];
+        const parts = line.split(delimiter);
+        if (parts.length < 3) continue;
+
+        const tsStr  = parts[0].trim();
+        const sysStr = parts[1].trim();
+        const diaStr = parts[2].trim();
+
+        if (!tsStr || !sysStr || !diaStr) continue;
+
+        const parsedTs = parseExcelTimestamp(tsStr);
+        if (!parsedTs) continue;
+
+        const sys = parseInt(sysStr, 10);
+        const dia = parseInt(diaStr, 10);
+        if (isNaN(sys) || isNaN(dia)) continue;
+
+        measurements.push({
+          timestampRaw: parsedTs.raw,
+          timestamp: parsedTs.display,
+          sys,
+          dia
+        });
+        imported++;
+      }
+
+      if (imported === 0) {
+        alert('Es wurden keine gültigen Messungen aus der CSV-Datei gelesen.');
+        return;
+      }
+
+      measurements.sort((a, b) => a.timestampRaw.localeCompare(b.timestampRaw));
+      renderAll();
+      persistData();
+    };
+
+    reader.readAsText(file, 'utf-8');
+  }
+
+  // ==========================
+  // Alles neu zeichnen
+  // ==========================
+
+  function renderAll() {
+    renderDetailsTable();
+    renderOverview();
+    updateChart();
+  }
+</script>
+
+</body>
+</html>
