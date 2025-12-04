@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-   <meta charset="UTF-8" />
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Blutdruck-Tagebuch</title>
 
@@ -49,16 +49,15 @@
     }
 
     .app-shell {
-  width: 100%;
-  max-width: 1400px;
-  border-radius: 26px;
-  background: linear-gradient(145deg, #f9fafb, #e2f3ff);
-  border: 1px solid rgba(148, 163, 184, 0.7);
-  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.25);
-  overflow: hidden;
-  display: none; /* <--- WICHTIG: zuerst verstecken */
-}
-
+      width: 100%;
+      max-width: 1400px;
+      border-radius: 26px;
+      background: linear-gradient(145deg, #f9fafb, #e2f3ff);
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.25);
+      overflow: hidden;
+      display: none; /* <--- WICHTIG: zuerst verstecken */
+    }
 
     .layout {
       display: flex;
@@ -456,7 +455,8 @@
     }
 
     input[type="datetime-local"],
-    input[type="number"] {
+    input[type="number"],
+    input[type="text"] {
       background: #ffffff;
       border-radius: 12px;
       border: 1px solid rgba(148, 163, 184, 0.7);
@@ -467,7 +467,8 @@
     }
 
     input[type="datetime-local"]:focus,
-    input[type="number"]:focus {
+    input[type="number"]:focus,
+    input[type="text"]:focus {
       outline: none;
       border-color: var(--accent);
       box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.5);
@@ -489,7 +490,8 @@
       height: 100% !important;
       display: block;
     }
-        /* Login-Overlay (Passwort-Schutz) */
+
+    /* Login-Overlay (Passwort-Schutz) */
     .login-overlay {
       position: fixed;
       inset: 0;
@@ -587,6 +589,7 @@
       </p>
     </div>
   </div>
+
   <div class="app-shell">
     <div class="layout">
       <!-- Sidebar links -->
@@ -624,7 +627,11 @@
 
       <!-- Hauptbereich -->
       <div class="main">
-        <header class="main-header"></header>
+        <header class="main-header">
+          <button id="logoutButton" class="btn btn-ghost btn-sm">
+            Abmelden
+          </button>
+        </header>
         <main class="content">
           <!-- ÜBERSICHT -->
           <section id="view-overview" class="view active">
@@ -738,24 +745,23 @@
           <section id="view-details" class="view">
             <!-- Speichern / JSON-Datei -->
             <div class="card">
-            <div class="card-header">
+              <div class="card-header">
                 <div>
-                <div class="card-title">Speicherung & Sync</div>
-                <div class="card-subtitle">Browser, optionale JSON-Datei & Cloud-Synchronisation</div>
+                  <div class="card-title">Speicherung & Sync</div>
+                  <div class="card-subtitle">Browser, optionale JSON-Datei & Cloud-Synchronisation</div>
                 </div>
-            </div>
-            <div class="form-row" style="margin-bottom:0; align-items:flex-end;">
+              </div>
+              <div class="form-row" style="margin-bottom:0; align-items:flex-end;">
                 <div class="form-group">
-                <label for="syncCodeInput">Sync-Code</label>
-                <input type="text" id="syncCodeInput" placeholder="z.B. MEINBLUTDRUCK2025" />
+                  <label for="syncCodeInput">Sync-Code</label>
+                  <input type="text" id="syncCodeInput" placeholder="z.B. MEINBLUTDRUCK2025" />
                 </div>
                 <button id="saveSyncCodeBtn" class="btn btn-outline btn-sm">Sync-Code speichern</button>
 
                 <button id="connectFileBtn" class="btn btn-outline btn-sm">JSON-Datei auswählen / erstellen</button>
                 <span id="fileStatus" class="card-subtitle">Keine JSON-Datei verbunden.</span>
+              </div>
             </div>
-            </div>
-
 
             <!-- Vollständige Tabelle + Import/Export + Alles löschen -->
             <div class="card">
@@ -798,632 +804,574 @@
   </div>
 
   <script>
-    localStorage.removeItem("blutdruck_logged_in");
+    // ======================
+    // LOGIN / PASSWORTSCHUTZ (Overlay)
+    // ======================
 
-  // ======================
-  // LOGIN / PASSWORTSCHUTZ (Overlay)
-  // ======================
+    // Passwort hier festlegen:
+    const APP_PASSWORD = "1234"; // <--- ÄNDERN!
 
-  // Passwort hier festlegen:
-  const APP_PASSWORD = "1234"; // <--- ÄNDERN!
+    // Merker, ob auf diesem Gerät schon eingeloggt wurde
+    const LOGIN_KEY = "blutdruck_logged_in";
 
-  // Merker, ob auf diesem Gerät schon eingeloggt wurde
-  const LOGIN_KEY = "blutdruck_logged_in";
+    // Login-Elemente aus dem DOM
+    const loginOverlay = document.getElementById("loginOverlay");
+    const loginInput   = document.getElementById("loginPasswordInput");
+    const loginButton  = document.getElementById("loginButton");
+    const loginError   = document.getElementById("loginError");
+    const appShell     = document.querySelector(".app-shell");
+    const logoutButton = document.getElementById("logoutButton"); // NEU
 
-  // Login-Elemente aus dem DOM
-  const loginOverlay = document.getElementById("loginOverlay");
-  const loginInput   = document.getElementById("loginPasswordInput");
-  const loginButton  = document.getElementById("loginButton");
-  const loginError   = document.getElementById("loginError");
-  const appShell     = document.querySelector(".app-shell");
+    // Beim Laden der Seite Login-Status prüfen und ggf. Login-Overlay anzeigen
+    window.addEventListener("load", () => {
+      // Event-Handler für den Login-Button und Enter-Taste
+      if (loginButton && loginInput) {
+        loginButton.addEventListener("click", handleLogin);
+        loginInput.addEventListener("keypress", (e) => {
+          if (e.key === "Enter") {
+            handleLogin();
+          }
+        });
+      }
 
-  // Beim Laden der Seite Login-Status prüfen und ggf. Login-Overlay anzeigen
-  window.addEventListener("load", () => {
-    // Event-Handler für den Login-Button und Enter-Taste
-    if (loginButton && loginInput) {
-      loginButton.addEventListener("click", handleLogin);
-      loginInput.addEventListener("keypress", (e) => {
-        if (e.key === "Enter") {
-          handleLogin();
+      // Logout-Button
+      if (logoutButton) {
+        logoutButton.addEventListener("click", handleLogout);
+      }
+
+      // Schon eingeloggt?
+      let alreadyLoggedIn = false;
+      try {
+        alreadyLoggedIn = localStorage.getItem(LOGIN_KEY) === "1";
+      } catch (e) {
+        console.error("Konnte Login-Status nicht lesen:", e);
+      }
+
+      if (alreadyLoggedIn) {
+        showApp();
+      } else {
+        // App verstecken, Login-Overlay anzeigen
+        if (appShell) appShell.style.display = "none";
+        if (loginOverlay) loginOverlay.style.display = "flex";
+        if (loginInput) loginInput.focus();
+      }
+    });
+
+    function handleLogin() {
+      if (!loginInput || !loginOverlay || !appShell) return;
+
+      const entered = loginInput.value.trim();
+
+      if (entered === APP_PASSWORD) {
+        // Richtiges Passwort
+        try {
+          localStorage.setItem(LOGIN_KEY, "1");
+        } catch (e) {
+          console.error("Konnte Login-Status nicht speichern:", e);
         }
+        showApp();
+      } else {
+        // Falsches Passwort
+        if (loginError) loginError.style.display = "block";
+        loginInput.value = "";
+        loginInput.focus();
+      }
+    }
+
+    function showApp() {
+      // Login-Overlay ausblenden
+      if (loginOverlay) loginOverlay.style.display = "none";
+      // App anzeigen
+      if (appShell) appShell.style.display = "flex";
+      // App-Logik starten (Daten laden, Chart etc.)
+      initApp();
+    }
+
+    function handleLogout() {
+      // Login-Merkung entfernen
+      try {
+        localStorage.removeItem(LOGIN_KEY);
+      } catch (e) {
+        console.error("Konnte Login-Status nicht löschen:", e);
+      }
+
+      // App ausblenden
+      if (appShell) appShell.style.display = "none";
+
+      // Login-Overlay einblenden
+      if (loginOverlay) loginOverlay.style.display = "flex";
+
+      // Passwortfeld leeren & Fokus setzen
+      if (loginInput) {
+        loginInput.value = "";
+        loginInput.focus();
+      }
+
+      // Fehlermeldung ausblenden
+      if (loginError) {
+        loginError.style.display = "none";
+      }
+    }
+
+    // ==========================
+    // Firebase Initialisierung
+    // ==========================
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyA6R72Jjd7G4XfmBJ_KJvZ9Q6seS9fsikc",
+      authDomain: "blutdrucktagebuch-30036.firebaseapp.com",
+      projectId: "blutdrucktagebuch-30036",
+      storageBucket: "blutdrucktagebuch-30036.firebasestorage.app",
+      messagingSenderId: "581659987028",
+      appId: "1:581659987028:web:7e6f8e4a46e945af9071c1",
+      measurementId: "G-LN5N63RZG6"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // ==========================
+    // Basis-Variablen
+    // ==========================
+
+    const STORAGE_KEY = 'blutdruck_measurements_v1';
+    const SYNC_CODE_KEY = 'blutdruck_sync_code_v1';
+
+    const measurements = [];
+    let bpChart = null;
+    let editIndex = null;
+    let fileHandle = null;
+    let syncCode = null;
+
+    // ==========================
+    // View-Handling
+    // ==========================
+
+    const navButtons = document.querySelectorAll('.nav-button');
+    const views = {
+      overview: document.getElementById('view-overview'),
+      details: document.getElementById('view-details'),
+    };
+
+    navButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const view = btn.getAttribute('data-view');
+        setActiveView(view);
+      });
+    });
+
+    function setActiveView(viewName) {
+      navButtons.forEach(b => {
+        b.classList.toggle('active', b.getAttribute('data-view') === viewName);
+      });
+      Object.entries(views).forEach(([name, el]) => {
+        el.classList.toggle('active', name === viewName);
       });
     }
 
-    // Schon eingeloggt?
-    let alreadyLoggedIn = false;
-    try {
-      alreadyLoggedIn = localStorage.getItem(LOGIN_KEY) === "1";
-    } catch (e) {
-      console.error("Konnte Login-Status nicht lesen:", e);
+    // ==========================
+    // DOM-Elemente
+    // ==========================
+
+    const timestampInput = document.getElementById('timestampInput');
+    const sysInput       = document.getElementById('sysInput');
+    const diaInput       = document.getElementById('diaInput');
+    const addUpdateBtn   = document.getElementById('addUpdateBtn');
+    const cancelEditBtn  = document.getElementById('cancelEditBtn');
+    const dataTableBody  = document.querySelector('#dataTable tbody');
+    const last5TableBody = document.querySelector('#last5Table tbody');
+    const chartCanvas    = document.getElementById('bpChart');
+
+    const exportJsonBtn  = document.getElementById('exportJsonBtn');
+    const exportCsvBtn   = document.getElementById('exportCsvBtn');
+    const connectFileBtn = document.getElementById('connectFileBtn');
+    const fileStatusSpan = document.getElementById('fileStatus');
+    const importExcelBtn = document.getElementById('importExcelBtn');
+    const excelFileInput = document.getElementById('excelFileInput');
+    const importCsvBtn   = document.getElementById('importCsvBtn');
+    const csvFileInput   = document.getElementById('csvFileInput');
+    const clearAllBtn    = document.getElementById('clearAllBtn');
+
+    const avgSysSpan     = document.getElementById('avgSys');
+    const avgDiaSpan     = document.getElementById('avgDia');
+    const totalCountSpan = document.getElementById('totalCount');
+    const totalCountPill = document.getElementById('totalCountPill');
+
+    const syncCodeInput   = document.getElementById('syncCodeInput');
+    const saveSyncCodeBtn = document.getElementById('saveSyncCodeBtn');
+
+    // ==========================
+    // Datum / Uhrzeit vorbereiten
+    // ==========================
+
+    function setNowToTimestamp() {
+      if (!timestampInput) return;
+      const now = new Date();
+      const pad = (n) => String(n).padStart(2, '0');
+      const yyyy = now.getFullYear();
+      const mm   = pad(now.getMonth() + 1);
+      const dd   = pad(now.getDate());
+      const hh   = pad(now.getHours());
+      const mi   = pad(now.getMinutes());
+      timestampInput.value = `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
     }
 
-    if (alreadyLoggedIn) {
-      showApp();
-    } else {
-      // App verstecken, Login-Overlay anzeigen
-      if (appShell) appShell.style.display = "none";
-      if (loginOverlay) loginOverlay.style.display = "flex";
-      if (loginInput) loginInput.focus();
-    }
-  });
+    // ==========================
+    // LocalStorage
+    // ==========================
 
-  function handleLogin() {
-    if (!loginInput || !loginOverlay || !appShell) return;
-
-    const entered = loginInput.value.trim();
-
-    if (entered === APP_PASSWORD) {
-      // Richtiges Passwort
+    function saveToLocalStorage() {
       try {
-        localStorage.setItem(LOGIN_KEY, "1");
+        const json = JSON.stringify(measurements);
+        localStorage.setItem(STORAGE_KEY, json);
       } catch (e) {
-        console.error("Konnte Login-Status nicht speichern:", e);
+        console.error('Fehler beim Speichern in localStorage:', e);
       }
-      showApp();
-    } else {
-      // Falsches Passwort
-      if (loginError) loginError.style.display = "block";
-      loginInput.value = "";
-      loginInput.focus();
     }
-  }
 
-  function showApp() {
-    // Login-Overlay ausblenden
-    if (loginOverlay) loginOverlay.style.display = "none";
-    // App anzeigen
-    if (appShell) appShell.style.display = "flex";
-    // App-Logik starten (Daten laden, Chart etc.)
-    initApp();
-  }
-
-  // ==========================
-  // Firebase Initialisierung
-  // ==========================
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyA6R72Jjd7G4XfmBJ_KJvZ9Q6seS9fsikc",
-    authDomain: "blutdrucktagebuch-30036.firebaseapp.com",
-    projectId: "blutdrucktagebuch-30036",
-    storageBucket: "blutdrucktagebuch-30036.firebasestorage.app",
-    messagingSenderId: "581659987028",
-    appId: "1:581659987028:web:7e6f8e4a46e945af9071c1",
-    measurementId: "G-LN5N63RZG6"
-  };
-
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-
-  // ==========================
-  // Basis-Variablen
-  // ==========================
-
-  const STORAGE_KEY = 'blutdruck_measurements_v1';
-  const SYNC_CODE_KEY = 'blutdruck_sync_code_v1';
-
-  const measurements = [];
-  let bpChart = null;
-  let editIndex = null;
-  let fileHandle = null;
-  let syncCode = null;
-
-  // ==========================
-  // View-Handling
-  // ==========================
-
-  const navButtons = document.querySelectorAll('.nav-button');
-  const views = {
-    overview: document.getElementById('view-overview'),
-    details: document.getElementById('view-details'),
-  };
-
-  navButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const view = btn.getAttribute('data-view');
-      setActiveView(view);
-    });
-  });
-
-  function setActiveView(viewName) {
-    navButtons.forEach(b => {
-      b.classList.toggle('active', b.getAttribute('data-view') === viewName);
-    });
-    Object.entries(views).forEach(([name, el]) => {
-      el.classList.toggle('active', name === viewName);
-    });
-  }
-
-  // ==========================
-  // DOM-Elemente
-  // ==========================
-
-  const timestampInput = document.getElementById('timestampInput');
-  const sysInput       = document.getElementById('sysInput');
-  const diaInput       = document.getElementById('diaInput');
-  const addUpdateBtn   = document.getElementById('addUpdateBtn');
-  const cancelEditBtn  = document.getElementById('cancelEditBtn');
-  const dataTableBody  = document.querySelector('#dataTable tbody');
-  const last5TableBody = document.querySelector('#last5Table tbody');
-  const chartCanvas    = document.getElementById('bpChart');
-
-  const exportJsonBtn  = document.getElementById('exportJsonBtn');
-  const exportCsvBtn   = document.getElementById('exportCsvBtn');
-  const connectFileBtn = document.getElementById('connectFileBtn');
-  const fileStatusSpan = document.getElementById('fileStatus');
-  const importExcelBtn = document.getElementById('importExcelBtn');
-  const excelFileInput = document.getElementById('excelFileInput');
-  const importCsvBtn   = document.getElementById('importCsvBtn');
-  const csvFileInput   = document.getElementById('csvFileInput');
-  const clearAllBtn    = document.getElementById('clearAllBtn');
-
-  const avgSysSpan     = document.getElementById('avgSys');
-  const avgDiaSpan     = document.getElementById('avgDia');
-  const totalCountSpan = document.getElementById('totalCount');
-  const totalCountPill = document.getElementById('totalCountPill');
-
-  const syncCodeInput   = document.getElementById('syncCodeInput');
-  const saveSyncCodeBtn = document.getElementById('saveSyncCodeBtn');
-
-  // ==========================
-  // Datum / Uhrzeit vorbereiten
-  // ==========================
-
-  function setNowToTimestamp() {
-    if (!timestampInput) return;
-    const now = new Date();
-    const pad = (n) => String(n).padStart(2, '0');
-    const yyyy = now.getFullYear();
-    const mm   = pad(now.getMonth() + 1);
-    const dd   = pad(now.getDate());
-    const hh   = pad(now.getHours());
-    const mi   = pad(now.getMinutes());
-    timestampInput.value = `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
-  }
-
-  // ==========================
-  // LocalStorage
-  // ==========================
-
-  function saveToLocalStorage() {
-    try {
-      const json = JSON.stringify(measurements);
-      localStorage.setItem(STORAGE_KEY, json);
-    } catch (e) {
-      console.error('Fehler beim Speichern in localStorage:', e);
+    function clearLocalStorage() {
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch (e) {
+        console.error('Fehler beim Löschen aus localStorage:', e);
+      }
     }
-  }
 
-  function clearLocalStorage() {
-    try {
-      localStorage.removeItem(STORAGE_KEY);
-    } catch (e) {
-      console.error('Fehler beim Löschen aus localStorage:', e);
+    function loadFromLocalStorage() {
+      try {
+        const json = localStorage.getItem(STORAGE_KEY);
+        if (!json) return;
+        const arr = JSON.parse(json);
+        if (Array.isArray(arr)) {
+          arr.forEach(m => {
+            if (m && typeof m.timestampRaw === 'string' &&
+                typeof m.timestamp === 'string' &&
+                typeof m.sys === 'number' &&
+                typeof m.dia === 'number') {
+              measurements.push(m);
+            }
+          });
+        }
+      } catch (e) {
+        console.error('Fehler beim Laden aus localStorage:', e);
+      }
     }
-  }
 
-  function loadFromLocalStorage() {
-    try {
-      const json = localStorage.getItem(STORAGE_KEY);
-      if (!json) return;
-      const arr = JSON.parse(json);
-      if (Array.isArray(arr)) {
-        arr.forEach(m => {
-          if (m && typeof m.timestampRaw === 'string' &&
+    // ==========================
+    // Sync-Code in localStorage
+    // ==========================
+
+    function loadSyncCodeFromLocal() {
+      try {
+        const stored = localStorage.getItem(SYNC_CODE_KEY);
+        if (stored) {
+          syncCode = stored;
+          if (syncCodeInput) {
+            syncCodeInput.value = syncCode;
+          }
+        }
+      } catch (e) {
+        console.error('Fehler beim Laden des Sync-Codes:', e);
+      }
+    }
+
+    function saveSyncCodeToLocal() {
+      try {
+        if (syncCode) {
+          localStorage.setItem(SYNC_CODE_KEY, syncCode);
+        } else {
+          localStorage.removeItem(SYNC_CODE_KEY);
+        }
+      } catch (e) {
+        console.error('Fehler beim Speichern des Sync-Codes:', e);
+      }
+    }
+
+    // ==========================
+    // File System Access API (optionale JSON-Datei)
+    // ==========================
+
+    async function connectJsonFile() {
+      if (!window.showSaveFilePicker) {
+        alert('Dein Browser unterstützt diese Dateifunktion nicht. Bitte nutze Chrome oder Edge in einer sicheren Umgebung (https/localhost).');
+        return;
+      }
+
+      try {
+        const handle = await window.showSaveFilePicker({
+          suggestedName: 'blutdruck.json',
+          types: [
+            {
+              description: 'JSON-Datei',
+              accept: { 'application/json': ['.json'] }
+            }
+          ]
+        });
+
+        fileHandle = handle;
+        if (fileStatusSpan) {
+          fileStatusSpan.textContent = 'Verbunden mit: ' + (handle.name || 'blutdruck.json');
+        }
+
+        // Vorhandene Datei einlesen
+        try {
+          const file = await fileHandle.getFile();
+          if (file.size > 0) {
+            const text = await file.text();
+            const arr = JSON.parse(text);
+            if (Array.isArray(arr)) {
+              measurements.length = 0;
+              arr.forEach(m => {
+                if (m && typeof m.timestampRaw === 'string' &&
+                    typeof m.timestamp === 'string' &&
+                    typeof m.sys === 'number' &&
+                    typeof m.dia === 'number') {
+                  measurements.push(m);
+                }
+              });
+              measurements.sort((a, b) => a.timestampRaw.localeCompare(b.timestampRaw));
+              renderAll();
+              saveToLocalStorage();
+            }
+          }
+        } catch (e) {
+          console.error('Fehler beim Lesen aus der JSON-Datei:', e);
+        }
+
+        persistData();
+      } catch (e) {
+        if (e.name === 'AbortError') return;
+        console.error('Fehler beim Auswählen/Erstellen der JSON-Datei:', e);
+      }
+    }
+
+    async function saveToJsonFile() {
+      if (!fileHandle) return;
+      try {
+        const writable = await fileHandle.createWritable();
+        await writable.write(JSON.stringify(measurements, null, 2));
+        await writable.close();
+      } catch (e) {
+        console.error('Fehler beim Schreiben in die JSON-Datei:', e);
+      }
+    }
+
+    // ==========================
+    // Cloud-Speicher (Firestore)
+    // ==========================
+
+    async function loadFromCloud() {
+      if (!syncCode) {
+        console.log('Kein Sync-Code gesetzt, überspringe Cloud-Load.');
+        return;
+      }
+
+      try {
+        const docRef = db.collection('measurements').doc(syncCode);
+        const docSnap = await docRef.get();
+        if (!docSnap.exists) {
+          console.log('Noch keine Cloud-Daten für diesen Sync-Code.');
+          return;
+        }
+
+        const data = docSnap.data();
+        if (!data || !Array.isArray(data.measurements)) return;
+
+        measurements.length = 0;
+        data.measurements.forEach(m => {
+          if (m &&
+              typeof m.timestampRaw === 'string' &&
               typeof m.timestamp === 'string' &&
               typeof m.sys === 'number' &&
               typeof m.dia === 'number') {
             measurements.push(m);
           }
         });
-      }
-    } catch (e) {
-      console.error('Fehler beim Laden aus localStorage:', e);
-    }
-  }
 
-  // ==========================
-  // Sync-Code in localStorage
-  // ==========================
-
-  function loadSyncCodeFromLocal() {
-    try {
-      const stored = localStorage.getItem(SYNC_CODE_KEY);
-      if (stored) {
-        syncCode = stored;
-        if (syncCodeInput) {
-          syncCodeInput.value = syncCode;
-        }
-      }
-    } catch (e) {
-      console.error('Fehler beim Laden des Sync-Codes:', e);
-    }
-  }
-
-  function saveSyncCodeToLocal() {
-    try {
-      if (syncCode) {
-        localStorage.setItem(SYNC_CODE_KEY, syncCode);
-      } else {
-        localStorage.removeItem(SYNC_CODE_KEY);
-      }
-    } catch (e) {
-      console.error('Fehler beim Speichern des Sync-Codes:', e);
-    }
-  }
-
-  // ==========================
-  // File System Access API (optionale JSON-Datei)
-  // ==========================
-
-  async function connectJsonFile() {
-    if (!window.showSaveFilePicker) {
-      alert('Dein Browser unterstützt diese Dateifunktion nicht. Bitte nutze Chrome oder Edge in einer sicheren Umgebung (https/localhost).');
-      return;
-    }
-
-    try {
-      const handle = await window.showSaveFilePicker({
-        suggestedName: 'blutdruck.json',
-        types: [
-          {
-            description: 'JSON-Datei',
-            accept: { 'application/json': ['.json'] }
-          }
-        ]
-      });
-
-      fileHandle = handle;
-      if (fileStatusSpan) {
-        fileStatusSpan.textContent = 'Verbunden mit: ' + (handle.name || 'blutdruck.json');
-      }
-
-      // Vorhandene Datei einlesen
-      try {
-        const file = await fileHandle.getFile();
-        if (file.size > 0) {
-          const text = await file.text();
-          const arr = JSON.parse(text);
-          if (Array.isArray(arr)) {
-            measurements.length = 0;
-            arr.forEach(m => {
-              if (m && typeof m.timestampRaw === 'string' &&
-                  typeof m.timestamp === 'string' &&
-                  typeof m.sys === 'number' &&
-                  typeof m.dia === 'number') {
-                measurements.push(m);
-              }
-            });
-            measurements.sort((a, b) => a.timestampRaw.localeCompare(b.timestampRaw));
-            renderAll();
-            saveToLocalStorage();
-          }
-        }
+        measurements.sort((a, b) => a.timestampRaw.localeCompare(b.timestampRaw));
+        renderAll();
+        saveToLocalStorage();
+        console.log('Daten aus Cloud geladen.');
       } catch (e) {
-        console.error('Fehler beim Lesen aus der JSON-Datei:', e);
+        console.error('Fehler beim Laden aus der Cloud:', e);
+        alert('Fehler beim Laden aus der Cloud. Details in der Konsole.');
       }
-
-      persistData();
-    } catch (e) {
-      if (e.name === 'AbortError') return;
-      console.error('Fehler beim Auswählen/Erstellen der JSON-Datei:', e);
-    }
-  }
-
-  async function saveToJsonFile() {
-    if (!fileHandle) return;
-    try {
-      const writable = await fileHandle.createWritable();
-      await writable.write(JSON.stringify(measurements, null, 2));
-      await writable.close();
-    } catch (e) {
-      console.error('Fehler beim Schreiben in die JSON-Datei:', e);
-    }
-  }
-
-  // ==========================
-  // Cloud-Speicher (Firestore)
-  // ==========================
-
-  async function loadFromCloud() {
-    if (!syncCode) {
-      console.log('Kein Sync-Code gesetzt, überspringe Cloud-Load.');
-      return;
     }
 
-    try {
-      const docRef = db.collection('measurements').doc(syncCode);
-      const docSnap = await docRef.get();
-      if (!docSnap.exists) {
-        console.log('Noch keine Cloud-Daten für diesen Sync-Code.');
+    async function saveToCloud() {
+      if (!syncCode) {
         return;
       }
 
-      const data = docSnap.data();
-      if (!data || !Array.isArray(data.measurements)) return;
+      try {
+        const docRef = db.collection('measurements').doc(syncCode);
+        await docRef.set({
+          measurements: measurements
+        });
+        console.log('Daten in Cloud gespeichert.');
+      } catch (e) {
+        console.error('Fehler beim Speichern in der Cloud:', e);
+      }
+    }
 
-      measurements.length = 0;
-      data.measurements.forEach(m => {
-        if (m &&
-            typeof m.timestampRaw === 'string' &&
-            typeof m.timestamp === 'string' &&
-            typeof m.sys === 'number' &&
-            typeof m.dia === 'number') {
-          measurements.push(m);
-        }
-      });
+    // ==========================
+    // Gemeinsame Persistenz
+    // ==========================
 
-      measurements.sort((a, b) => a.timestampRaw.localeCompare(b.timestampRaw));
-      renderAll();
+    function persistData() {
       saveToLocalStorage();
-      console.log('Daten aus Cloud geladen.');
-    } catch (e) {
-      console.error('Fehler beim Laden aus der Cloud:', e);
-      alert('Fehler beim Laden aus der Cloud. Details in der Konsole.');
-    }
-  }
-
-  async function saveToCloud() {
-    if (!syncCode) {
-      return;
+      if (fileHandle) {
+        saveToJsonFile();
+      }
+      saveToCloud();
     }
 
-    try {
-      const docRef = db.collection('measurements').doc(syncCode);
-      await docRef.set({
-        measurements: measurements
+    // Button: JSON-Datei verbinden
+    if (connectFileBtn) {
+      connectFileBtn.addEventListener('click', () => {
+        connectJsonFile();
       });
-      console.log('Daten in Cloud gespeichert.');
-    } catch (e) {
-      console.error('Fehler beim Speichern in der Cloud:', e);
     }
-  }
 
-  // ==========================
-  // Gemeinsame Persistenz
-  // ==========================
-
-  function persistData() {
-    saveToLocalStorage();
-    if (fileHandle) {
-      saveToJsonFile();
-    }
-    saveToCloud();
-  }
-
-  // Button: JSON-Datei verbinden
-  if (connectFileBtn) {
-    connectFileBtn.addEventListener('click', () => {
-      connectJsonFile();
-    });
-  }
-
-  // Button: Sync-Code speichern
-  if (saveSyncCodeBtn) {
-    saveSyncCodeBtn.addEventListener('click', () => {
-      const val = (syncCodeInput.value || '').trim();
-      if (!val) {
-        if (!confirm('Leerer Sync-Code – Cloud-Synchronisation wird deaktiviert. Fortfahren?')) {
+    // Button: Sync-Code speichern
+    if (saveSyncCodeBtn) {
+      saveSyncCodeBtn.addEventListener('click', () => {
+        const val = (syncCodeInput.value || '').trim();
+        if (!val) {
+          if (!confirm('Leerer Sync-Code – Cloud-Synchronisation wird deaktiviert. Fortfahren?')) {
+            return;
+          }
+          syncCode = null;
+          saveSyncCodeToLocal();
+          alert('Sync-Code entfernt. Daten werden nur lokal gespeichert.');
           return;
         }
-        syncCode = null;
+
+        syncCode = val;
         saveSyncCodeToLocal();
-        alert('Sync-Code entfernt. Daten werden nur lokal gespeichert.');
-        return;
-      }
+        alert('Sync-Code gespeichert. Daten werden jetzt mit der Cloud synchronisiert.');
+        loadFromCloud();
+      });
+    }
 
-      syncCode = val;
-      saveSyncCodeToLocal();
-      alert('Sync-Code gespeichert. Daten werden jetzt mit der Cloud synchronisiert.');
-      loadFromCloud();
-    });
-  }
+    // ==========================
+    // Formular / Eingabe
+    // ==========================
 
-  // ==========================
-  // Formular / Eingabe
-  // ==========================
+    if (addUpdateBtn) {
+      addUpdateBtn.addEventListener('click', () => {
+        const tsValue = timestampInput.value;
+        const sys = parseInt(sysInput.value, 10);
+        const dia = parseInt(diaInput.value, 10);
 
-  if (addUpdateBtn) {
-    addUpdateBtn.addEventListener('click', () => {
-      const tsValue = timestampInput.value;
-      const sys = parseInt(sysInput.value, 10);
-      const dia = parseInt(diaInput.value, 10);
+        if (!tsValue) {
+          alert('Bitte einen Zeitstempel eingeben.');
+          timestampInput.focus();
+          return;
+        }
+        if (isNaN(sys) || isNaN(dia)) {
+          alert('Bitte sowohl systolischen als auch diastolischen Wert eingeben.');
+          if (isNaN(sys)) sysInput.focus(); else diaInput.focus();
+          return;
+        }
 
-      if (!tsValue) {
-        alert('Bitte einen Zeitstempel eingeben.');
-        timestampInput.focus();
-        return;
-      }
-      if (isNaN(sys) || isNaN(dia)) {
-        alert('Bitte sowohl systolischen als auch diastolischen Wert eingeben.');
-        if (isNaN(sys)) sysInput.focus(); else diaInput.focus();
-        return;
-      }
+        const tsDisplay = tsValue.replace('T', ' ');
 
-      const tsDisplay = tsValue.replace('T', ' ');
+        if (editIndex === null) {
+          measurements.push({
+            timestampRaw: tsValue,
+            timestamp: tsDisplay,
+            sys,
+            dia
+          });
+        } else {
+          measurements[editIndex] = {
+            timestampRaw: tsValue,
+            timestamp: tsDisplay,
+            sys,
+            dia
+          };
+        }
 
-      if (editIndex === null) {
-        measurements.push({
-          timestampRaw: tsValue,
-          timestamp: tsDisplay,
-          sys,
-          dia
-        });
-      } else {
-        measurements[editIndex] = {
-          timestampRaw: tsValue,
-          timestamp: tsDisplay,
-          sys,
-          dia
-        };
-      }
+        measurements.sort((a, b) => a.timestampRaw.localeCompare(b.timestampRaw));
 
-      measurements.sort((a, b) => a.timestampRaw.localeCompare(b.timestampRaw));
+        resetForm();
+        renderAll();
+        persistData();
+      });
+    }
 
-      resetForm();
-      renderAll();
-      persistData();
-    });
-  }
+    if (cancelEditBtn) {
+      cancelEditBtn.addEventListener('click', () => {
+        resetForm();
+      });
+    }
 
-  if (cancelEditBtn) {
-    cancelEditBtn.addEventListener('click', () => {
-      resetForm();
-    });
-  }
-
-  function resetForm() {
-    setNowToTimestamp();
-    if (sysInput) sysInput.value = '';
-    if (diaInput) diaInput.value = '';
-    editIndex = null;
-    if (addUpdateBtn) addUpdateBtn.textContent = 'Messung hinzufügen';
-    if (cancelEditBtn) cancelEditBtn.style.display = 'none';
-    if (timestampInput) timestampInput.focus();
-  }
-
-  // ==========================
-  // Alle Daten löschen
-  // ==========================
-
-  if (clearAllBtn) {
-    clearAllBtn.addEventListener('click', async () => {
-      if (!confirm('Wirklich alle Messungen löschen? Diese Aktion kann nicht rückgängig gemacht werden.')) {
-        return;
-      }
-      measurements.length = 0;
+    function resetForm() {
+      setNowToTimestamp();
+      if (sysInput) sysInput.value = '';
+      if (diaInput) diaInput.value = '';
       editIndex = null;
-      clearLocalStorage();
-      renderAll();
-      if (fileHandle) {
-        await saveToJsonFile();
-      }
-      resetForm();
-      saveToCloud();
-    });
-  }
-
-  // ==========================
-  // Details-Tabelle (absteigend)
-  // ==========================
-
-  function renderDetailsTable() {
-    dataTableBody.innerHTML = '';
-
-    if (measurements.length === 0) {
-      const tr = document.createElement('tr');
-      const td = document.createElement('td');
-      td.colSpan = 5;
-      td.className = 'table-muted';
-      td.textContent = 'Noch keine Messungen erfasst.';
-      tr.appendChild(td);
-      dataTableBody.appendChild(tr);
-      return;
+      if (addUpdateBtn) addUpdateBtn.textContent = 'Messung hinzufügen';
+      if (cancelEditBtn) cancelEditBtn.style.display = 'none';
+      if (timestampInput) timestampInput.focus();
     }
 
-    const n = measurements.length;
-    const sorted = measurements.slice().sort((a, b) =>
-      b.timestampRaw.localeCompare(a.timestampRaw)
-    );
+    // ==========================
+    // Alle Daten löschen
+    // ==========================
 
-    sorted.forEach((m, idx) => {
-      const tr = document.createElement('tr');
-      const isHigh = m.sys >= 140 || m.dia >= 90;
-      if (isHigh) {
-        tr.classList.add('row-high');
+    if (clearAllBtn) {
+      clearAllBtn.addEventListener('click', async () => {
+        if (!confirm('Wirklich alle Messungen löschen? Diese Aktion kann nicht rückgängig gemacht werden.')) {
+          return;
+        }
+        measurements.length = 0;
+        editIndex = null;
+        clearLocalStorage();
+        renderAll();
+        if (fileHandle) {
+          await saveToJsonFile();
+        }
+        resetForm();
+        saveToCloud();
+      });
+    }
+
+    // ==========================
+    // Details-Tabelle (absteigend)
+    // ==========================
+
+    function renderDetailsTable() {
+      dataTableBody.innerHTML = '';
+
+      if (measurements.length === 0) {
+        const tr = document.createElement('tr');
+        const td = document.createElement('td');
+        td.colSpan = 5;
+        td.className = 'table-muted';
+        td.textContent = 'Noch keine Messungen erfasst.';
+        tr.appendChild(td);
+        dataTableBody.appendChild(tr);
+        return;
       }
 
-      const displayIndex = n - idx;
+      const n = measurements.length;
+      const sorted = measurements.slice().sort((a, b) =>
+        b.timestampRaw.localeCompare(a.timestampRaw)
+      );
 
-      const tdIndex = document.createElement('td');
-      tdIndex.textContent = displayIndex;
-
-      const tdTime = document.createElement('td');
-      tdTime.textContent = m.timestamp;
-
-      const tdSys = document.createElement('td');
-      tdSys.textContent = m.sys;
-      if (isHigh) tdSys.classList.add('value-high');
-
-      const tdDia = document.createElement('td');
-      tdDia.textContent = m.dia;
-      if (isHigh) tdDia.classList.add('value-high');
-
-      const tdActions = document.createElement('td');
-      const btnRow = document.createElement('div');
-      btnRow.className = 'btn-row';
-
-      const editButton = document.createElement('button');
-      editButton.textContent = 'Bearbeiten';
-      editButton.className = 'btn btn-outline btn-sm';
-      const originalIndex = measurements.indexOf(m);
-      editButton.onclick = () => startEdit(originalIndex);
-
-      const deleteButton = document.createElement('button');
-      deleteButton.textContent = 'Löschen';
-      deleteButton.className = 'btn btn-danger btn-sm';
-      deleteButton.onclick = () => deleteMeasurement(originalIndex);
-
-      btnRow.appendChild(editButton);
-      btnRow.appendChild(deleteButton);
-      tdActions.appendChild(btnRow);
-
-      tr.appendChild(tdIndex);
-      tr.appendChild(tdTime);
-      tr.appendChild(tdSys);
-      tr.appendChild(tdDia);
-      tr.appendChild(tdActions);
-      dataTableBody.appendChild(tr);
-    });
-  }
-
-  function startEdit(index) {
-    const m = measurements[index];
-    if (!m) return;
-    if (timestampInput) timestampInput.value = m.timestampRaw;
-    if (sysInput) sysInput.value = m.sys;
-    if (diaInput) diaInput.value = m.dia;
-    editIndex = index;
-    if (addUpdateBtn) addUpdateBtn.textContent = 'Messung aktualisieren';
-    if (cancelEditBtn) cancelEditBtn.style.display = 'inline-block';
-    if (timestampInput) timestampInput.focus();
-    setActiveView('overview');
-  }
-
-  function deleteMeasurement(index) {
-    if (!confirm('Diese Messung wirklich löschen?')) return;
-    measurements.splice(index, 1);
-    if (editIndex === index) {
-      resetForm();
-    } else if (editIndex !== null && index < editIndex) {
-      editIndex--;
-    }
-    renderAll();
-    persistData();
-  }
-
-  // ==========================
-  // Übersicht
-  // ==========================
-
-  function renderOverview() {
-    last5TableBody.innerHTML = '';
-    if (measurements.length === 0) {
-      const tr = document.createElement('tr');
-      const td = document.createElement('td');
-      td.colSpan = 4;
-      td.className = 'table-muted';
-      td.textContent = 'Noch keine Messungen erfasst.';
-      tr.appendChild(td);
-      last5TableBody.appendChild(tr);
-    } else {
-      const lastFive = measurements.slice(-5).reverse();
-      lastFive.forEach((m, idx) => {
+      sorted.forEach((m, idx) => {
         const tr = document.createElement('tr');
         const isHigh = m.sys >= 140 || m.dia >= 90;
-        if (isHigh) tr.classList.add('row-high');
+        if (isHigh) {
+          tr.classList.add('row-high');
+        }
+
+        const displayIndex = n - idx;
 
         const tdIndex = document.createElement('td');
-        tdIndex.textContent = measurements.length - idx;
+        tdIndex.textContent = displayIndex;
 
         const tdTime = document.createElement('td');
         tdTime.textContent = m.timestamp;
@@ -1436,427 +1384,515 @@
         tdDia.textContent = m.dia;
         if (isHigh) tdDia.classList.add('value-high');
 
+        const tdActions = document.createElement('td');
+        const btnRow = document.createElement('div');
+        btnRow.className = 'btn-row';
+
+        const editButton = document.createElement('button');
+        editButton.textContent = 'Bearbeiten';
+        editButton.className = 'btn btn-outline btn-sm';
+        const originalIndex = measurements.indexOf(m);
+        editButton.onclick = () => startEdit(originalIndex);
+
+        const deleteButton = document.createElement('button');
+        deleteButton.textContent = 'Löschen';
+        deleteButton.className = 'btn btn-danger btn-sm';
+        deleteButton.onclick = () => deleteMeasurement(originalIndex);
+
+        btnRow.appendChild(editButton);
+        btnRow.appendChild(deleteButton);
+        tdActions.appendChild(btnRow);
+
         tr.appendChild(tdIndex);
         tr.appendChild(tdTime);
         tr.appendChild(tdSys);
         tr.appendChild(tdDia);
+        tr.appendChild(tdActions);
+        dataTableBody.appendChild(tr);
+      });
+    }
+
+    function startEdit(index) {
+      const m = measurements[index];
+      if (!m) return;
+      if (timestampInput) timestampInput.value = m.timestampRaw;
+      if (sysInput) sysInput.value = m.sys;
+      if (diaInput) diaInput.value = m.dia;
+      editIndex = index;
+      if (addUpdateBtn) addUpdateBtn.textContent = 'Messung aktualisieren';
+      if (cancelEditBtn) cancelEditBtn.style.display = 'inline-block';
+      if (timestampInput) timestampInput.focus();
+      setActiveView('overview');
+    }
+
+    function deleteMeasurement(index) {
+      if (!confirm('Diese Messung wirklich löschen?')) return;
+      measurements.splice(index, 1);
+      if (editIndex === index) {
+        resetForm();
+      } else if (editIndex !== null && index < editIndex) {
+        editIndex--;
+      }
+      renderAll();
+      persistData();
+    }
+
+    // ==========================
+    // Übersicht
+    // ==========================
+
+    function renderOverview() {
+      last5TableBody.innerHTML = '';
+      if (measurements.length === 0) {
+        const tr = document.createElement('tr');
+        const td = document.createElement('td');
+        td.colSpan = 4;
+        td.className = 'table-muted';
+        td.textContent = 'Noch keine Messungen erfasst.';
+        tr.appendChild(td);
         last5TableBody.appendChild(tr);
-      });
+      } else {
+        const lastFive = measurements.slice(-5).reverse();
+        lastFive.forEach((m, idx) => {
+          const tr = document.createElement('tr');
+          const isHigh = m.sys >= 140 || m.dia >= 90;
+          if (isHigh) tr.classList.add('row-high');
+
+          const tdIndex = document.createElement('td');
+          tdIndex.textContent = measurements.length - idx;
+
+          const tdTime = document.createElement('td');
+          tdTime.textContent = m.timestamp;
+
+          const tdSys = document.createElement('td');
+          tdSys.textContent = m.sys;
+          if (isHigh) tdSys.classList.add('value-high');
+
+          const tdDia = document.createElement('td');
+          tdDia.textContent = m.dia;
+          if (isHigh) tdDia.classList.add('value-high');
+
+          tr.appendChild(tdIndex);
+          tr.appendChild(tdTime);
+          tr.appendChild(tdSys);
+          tr.appendChild(tdDia);
+          last5TableBody.appendChild(tr);
+        });
+      }
+
+      const n = measurements.length;
+      if (totalCountSpan) totalCountSpan.textContent = n;
+      if (totalCountPill) totalCountPill.textContent = `${n} Messung${n === 1 ? '' : 'en'}`;
+
+      if (n === 0) {
+        if (avgSysSpan) avgSysSpan.textContent = '–';
+        if (avgDiaSpan) avgDiaSpan.textContent = '–';
+      } else {
+        const sumSys = measurements.reduce((acc, m) => acc + m.sys, 0);
+        const sumDia = measurements.reduce((acc, m) => acc + m.dia, 0);
+        if (avgSysSpan) avgSysSpan.textContent = (sumSys / n).toFixed(1);
+        if (avgDiaSpan) avgDiaSpan.textContent = (sumDia / n).toFixed(1);
+      }
     }
 
-    const n = measurements.length;
-    if (totalCountSpan) totalCountSpan.textContent = n;
-    if (totalCountPill) totalCountPill.textContent = `${n} Messung${n === 1 ? '' : 'en'}`;
+    // ==========================
+    // Trend-Berechnung
+    // ==========================
 
-    if (n === 0) {
-      if (avgSysSpan) avgSysSpan.textContent = '–';
-      if (avgDiaSpan) avgDiaSpan.textContent = '–';
-    } else {
-      const sumSys = measurements.reduce((acc, m) => acc + m.sys, 0);
-      const sumDia = measurements.reduce((acc, m) => acc + m.dia, 0);
-      if (avgSysSpan) avgSysSpan.textContent = (sumSys / n).toFixed(1);
-      if (avgDiaSpan) avgDiaSpan.textContent = (sumDia / n).toFixed(1);
-    }
-  }
+    function calcTrend(values) {
+      const n = values.length;
+      if (n < 2) {
+        return values.slice();
+      }
 
-  // ==========================
-  // Trend-Berechnung
-  // ==========================
+      let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
+      for (let i = 0; i < n; i++) {
+        const x = i;
+        const y = values[i];
+        sumX += x;
+        sumY += y;
+        sumXY += x * y;
+        sumXX += x * x;
+      }
+      const denominator = n * sumXX - sumX * sumX;
+      let a = 0, b = 0;
+      if (denominator !== 0) {
+        a = (n * sumXY - sumX * sumY) / denominator;
+        b = (sumY - a * sumX) / n;
+      } else {
+        a = 0;
+        b = sumY / n;
+      }
 
-  function calcTrend(values) {
-    const n = values.length;
-    if (n < 2) {
-      return values.slice();
-    }
-
-    let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
-    for (let i = 0; i < n; i++) {
-      const x = i;
-      const y = values[i];
-      sumX += x;
-      sumY += y;
-      sumXY += x * y;
-      sumXX += x * x;
-    }
-    const denominator = n * sumXX - sumX * sumX;
-    let a = 0, b = 0;
-    if (denominator !== 0) {
-      a = (n * sumXY - sumX * sumY) / denominator;
-      b = (sumY - a * sumX) / n;
-    } else {
-      a = 0;
-      b = sumY / n;
+      const trend = [];
+      for (let i = 0; i < n; i++) {
+        trend.push(a * i + b);
+      }
+      return trend;
     }
 
-    const trend = [];
-    for (let i = 0; i < n; i++) {
-      trend.push(a * i + b);
-    }
-    return trend;
-  }
+    // ==========================
+    // Diagramm
+    // ==========================
 
-  // ==========================
-  // Diagramm
-  // ==========================
+    function updateChart() {
+      if (!chartCanvas) return;
+      const labels    = measurements.map(m => m.timestamp);
+      const sysValues = measurements.map(m => m.sys);
+      const diaValues = measurements.map(m => m.dia);
 
-  function updateChart() {
-    if (!chartCanvas) return;
-    const labels    = measurements.map(m => m.timestamp);
-    const sysValues = measurements.map(m => m.sys);
-    const diaValues = measurements.map(m => m.dia);
+      const sysTrend = calcTrend(sysValues);
+      const diaTrend = calcTrend(diaValues);
 
-    const sysTrend = calcTrend(sysValues);
-    const diaTrend = calcTrend(diaValues);
-
-    const data = {
-      labels: labels,
-      datasets: [
-        {
-          label: 'Systolisch',
-          data: sysValues,
-          tension: 0.2,
-          fill: false,
-          borderWidth: 2,
-          pointRadius: 4
-        },
-        {
-          label: 'Diastolisch',
-          data: diaValues,
-          tension: 0.2,
-          fill: false,
-          borderWidth: 2,
-          pointRadius: 4
-        },
-        {
-          label: 'Trend Systolisch',
-          data: sysTrend,
-          borderWidth: 1.5,
-          borderDash: [5, 5],
-          pointRadius: 0,
-          fill: false
-        },
-        {
-          label: 'Trend Diastolisch',
-          data: diaTrend,
-          borderWidth: 1.5,
-          borderDash: [5, 5],
-          pointRadius: 0,
-          fill: false
-        }
-      ]
-    };
-
-    const options = {
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: {
-        x: {
-          title: {
-            display: true,
-            text: 'Zeitstempel'
+      const data = {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Systolisch',
+            data: sysValues,
+            tension: 0.2,
+            fill: false,
+            borderWidth: 2,
+            pointRadius: 4
           },
-          ticks: {
-            maxRotation: 270,
-            minRotation: 270
+          {
+            label: 'Diastolisch',
+            data: diaValues,
+            tension: 0.2,
+            fill: false,
+            borderWidth: 2,
+            pointRadius: 4
+          },
+          {
+            label: 'Trend Systolisch',
+            data: sysTrend,
+            borderWidth: 1.5,
+            borderDash: [5, 5],
+            pointRadius: 0,
+            fill: false
+          },
+          {
+            label: 'Trend Diastolisch',
+            data: diaTrend,
+            borderWidth: 1.5,
+            borderDash: [5, 5],
+            pointRadius: 0,
+            fill: false
+          }
+        ]
+      };
+
+      const options = {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            title: {
+              display: true,
+              text: 'Zeitstempel'
+            },
+            ticks: {
+              maxRotation: 270,
+              minRotation: 270
+            }
+          },
+          y: {
+            title: {
+              display: true,
+              text: 'Blutdruck (mmHg)'
+            }
           }
         },
-        y: {
-          title: {
-            display: true,
-            text: 'Blutdruck (mmHg)'
+        plugins: {
+          legend: {
+            position: 'top'
           }
         }
-      },
-      plugins: {
-        legend: {
-          position: 'top'
-        }
-      }
-    };
+      };
 
-    if (bpChart) {
-      bpChart.data = data;
-      bpChart.options = options;
-      bpChart.update();
-    } else {
-      bpChart = new Chart(chartCanvas, {
-        type: 'line',
-        data: data,
-        options: options
+      if (bpChart) {
+        bpChart.data = data;
+        bpChart.options = options;
+        bpChart.update();
+      } else {
+        bpChart = new Chart(chartCanvas, {
+          type: 'line',
+          data: data,
+          options: options
+        });
+      }
+    }
+
+    // ==========================
+    // Export (JSON / CSV)
+    // ==========================
+
+    function downloadText(filename, text) {
+      const blob = new Blob([text], { type: 'text/plain;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    if (exportJsonBtn) {
+      exportJsonBtn.addEventListener('click', () => {
+        if (measurements.length === 0) {
+          alert('Keine Daten zum Exportieren.');
+          return;
+        }
+        const json = JSON.stringify(measurements, null, 2);
+        downloadText('blutdruck.json', json);
       });
     }
-  }
 
-  // ==========================
-  // Export (JSON / CSV)
-  // ==========================
+    if (exportCsvBtn) {
+      exportCsvBtn.addEventListener('click', () => {
+        if (measurements.length === 0) {
+          alert('Keine Daten zum Exportieren.');
+          return;
+        }
+        const header = ['timestamp', 'systolisch', 'diastolisch'];
+        const rows = measurements.map(m => [
+          m.timestamp,
+          m.sys,
+          m.dia
+        ]);
 
-  function downloadText(filename, text) {
-    const blob = new Blob([text], { type: 'text/plain;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }
+        let csv = header.join(';') + '\n';
+        rows.forEach(r => {
+          csv += r.join(';') + '\n';
+        });
 
-  if (exportJsonBtn) {
-    exportJsonBtn.addEventListener('click', () => {
-      if (measurements.length === 0) {
-        alert('Keine Daten zum Exportieren.');
-        return;
-      }
-      const json = JSON.stringify(measurements, null, 2);
-      downloadText('blutdruck.json', json);
-    });
-  }
-
-  if (exportCsvBtn) {
-    exportCsvBtn.addEventListener('click', () => {
-      if (measurements.length === 0) {
-        alert('Keine Daten zum Exportieren.');
-        return;
-      }
-      const header = ['timestamp', 'systolisch', 'diastolisch'];
-      const rows = measurements.map(m => [
-        m.timestamp,
-        m.sys,
-        m.dia
-      ]);
-
-      let csv = header.join(';') + '\n';
-      rows.forEach(r => {
-        csv += r.join(';') + '\n';
+        downloadText('blutdruck.csv', csv);
       });
+    }
 
-      downloadText('blutdruck.csv', csv);
-    });
-  }
+    // ==========================
+    // Timestamp-Parser für Import
+    // ==========================
 
-  // ==========================
-  // Timestamp-Parser für Import
-  // ==========================
+    function parseExcelTimestamp(str) {
+      if (typeof str !== 'string') return null;
+      str = str.trim();
+      if (!str) return null;
 
-  function parseExcelTimestamp(str) {
-    if (typeof str !== 'string') return null;
-    str = str.trim();
-    if (!str) return null;
+      let candidate = str.replace('T', ' ');
 
-    let candidate = str.replace('T', ' ');
+      let isoMatch = candidate.match(/^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2})$/);
+      if (isoMatch) {
+        const [, yyyy, mm, dd, hh, mi] = isoMatch;
+        const raw = `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
+        const display = `${yyyy}-${mm}-${dd} ${hh}:${mi}`;
+        return { raw, display };
+      }
 
-    let isoMatch = candidate.match(/^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2})$/);
-    if (isoMatch) {
-      const [, yyyy, mm, dd, hh, mi] = isoMatch;
-      const raw = `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
-      const display = `${yyyy}-${mm}-${dd} ${hh}:${mi}`;
+      const parts = candidate.split(' ');
+      if (parts.length < 2) return null;
+
+      const datePart = parts[0];
+      const timePart = parts[1];
+
+      const dParts = datePart.split('.');
+      if (dParts.length !== 3) return null;
+
+      let [dd, mm, yy] = dParts;
+      dd = dd.padStart(2, '0');
+      mm = mm.padStart(2, '0');
+
+      if (yy.length === 2) {
+        yy = '20' + yy;
+      } else if (yy.length === 4) {
+        // ok
+      } else {
+        return null;
+      }
+
+      const tParts = timePart.split(':');
+      if (tParts.length < 2) return null;
+      let [hh, mi] = tParts;
+      hh = hh.padStart(2, '0');
+      mi = mi.padStart(2, '0');
+
+      const raw = `${yy}-${mm}-${dd}T${hh}:${mi}`;
+      const display = `${yy}-${mm}-${dd} ${hh}:${mi}`;
       return { raw, display };
     }
 
-    const parts = candidate.split(' ');
-    if (parts.length < 2) return null;
+    // ==========================
+    // Excel-Import
+    // ==========================
 
-    const datePart = parts[0];
-    const timePart = parts[1];
-
-    const dParts = datePart.split('.');
-    if (dParts.length !== 3) return null;
-
-    let [dd, mm, yy] = dParts;
-    dd = dd.padStart(2, '0');
-    mm = mm.padStart(2, '0');
-
-    if (yy.length === 2) {
-      yy = '20' + yy;
-    } else if (yy.length === 4) {
-      // ok
-    } else {
-      return null;
+    if (importExcelBtn) {
+      importExcelBtn.addEventListener('click', () => {
+        excelFileInput.value = '';
+        excelFileInput.click();
+      });
     }
 
-    const tParts = timePart.split(':');
-    if (tParts.length < 2) return null;
-    let [hh, mi] = tParts;
-    hh = hh.padStart(2, '0');
-    mi = mi.padStart(2, '0');
-
-    const raw = `${yy}-${mm}-${dd}T${hh}:${mi}`;
-    const display = `${yy}-${mm}-${dd} ${hh}:${mi}`;
-    return { raw, display };
-  }
-
-  // ==========================
-  // Excel-Import
-  // ==========================
-
-  if (importExcelBtn) {
-    importExcelBtn.addEventListener('click', () => {
-      excelFileInput.value = '';
-      excelFileInput.click();
-    });
-  }
-
-  if (excelFileInput) {
-    excelFileInput.addEventListener('change', handleExcelImport);
-  }
-
-  function handleExcelImport(evt) {
-    const file = evt.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      const data = e.target.result;
-      const workbook = XLSX.read(data, { type: 'binary' });
-      const sheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[sheetName];
-
-      const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: false });
-
-      let imported = 0;
-
-      for (let i = 1; i < rows.length; i++) {
-        const row = rows[i];
-        if (!row || row.length < 3) continue;
-
-        const tsStr  = row[0];
-        const sysStr = row[1];
-        const diaStr = row[2];
-
-        if (!tsStr || !sysStr || !diaStr) continue;
-
-        const parsedTs = parseExcelTimestamp(tsStr);
-        if (!parsedTs) continue;
-
-        const sys = parseInt(sysStr, 10);
-        const dia = parseInt(diaStr, 10);
-        if (isNaN(sys) || isNaN(dia)) continue;
-
-        measurements.push({
-          timestampRaw: parsedTs.raw,
-          timestamp: parsedTs.display,
-          sys,
-          dia
-        });
-        imported++;
-      }
-
-      if (imported === 0) {
-        alert('Es wurden keine gültigen Messungen aus der Excel-Datei gelesen.');
-        return;
-      }
-
-      measurements.sort((a, b) => a.timestampRaw.localeCompare(b.timestampRaw));
-      renderAll();
-      persistData();
-    };
-
-    reader.readAsBinaryString(file);
-  }
-
-  // ==========================
-  // CSV-Import
-  // ==========================
-
-  if (importCsvBtn) {
-    importCsvBtn.addEventListener('click', () => {
-      csvFileInput.value = '';
-      csvFileInput.click();
-    });
-  }
-
-  if (csvFileInput) {
-    csvFileInput.addEventListener('change', handleCsvImport);
-  }
-
-  function handleCsvImport(evt) {
-    const file = evt.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      const text = e.target.result;
-      const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
-      if (lines.length === 0) {
-        alert('Die CSV-Datei ist leer.');
-        return;
-      }
-
-      const dataLines = lines;
-      const sample = dataLines[0];
-      const delimiter = sample.indexOf(';') !== -1 ? ';' : ',';
-
-      let imported = 0;
-
-      for (let i = 0; i < dataLines.length; i++) {
-        const line = dataLines[i];
-        const parts = line.split(delimiter);
-        if (parts.length < 3) continue;
-
-        const tsStr  = parts[0].trim();
-        const sysStr = parts[1].trim();
-        const diaStr = parts[2].trim();
-
-        if (!tsStr || !sysStr || !diaStr) continue;
-
-        const parsedTs = parseExcelTimestamp(tsStr);
-        if (!parsedTs) continue;
-
-        const sys = parseInt(sysStr, 10);
-        const dia = parseInt(diaStr, 10);
-        if (isNaN(sys) || isNaN(dia)) continue;
-
-        measurements.push({
-          timestampRaw: parsedTs.raw,
-          timestamp: parsedTs.display,
-          sys,
-          dia
-        });
-        imported++;
-      }
-
-      if (imported === 0) {
-        alert('Es wurden keine gültigen Messungen aus der CSV-Datei gelesen.');
-        return;
-      }
-
-      measurements.sort((a, b) => a.timestampRaw.localeCompare(b.timestampRaw));
-      renderAll();
-      persistData();
-    };
-
-    reader.readAsText(file, 'utf-8');
-  }
-
-  // ==========================
-  // Alles neu zeichnen
-  // ==========================
-
-  function renderAll() {
-    renderDetailsTable();
-    renderOverview();
-    updateChart();
-  }
-
-  // ==========================
-  // App-Initialisierung (wird NUR nach Login aufgerufen)
-  // ==========================
-
-  function initApp() {
-    loadFromLocalStorage();
-    loadSyncCodeFromLocal();
-    renderAll();
-    setNowToTimestamp();
-    if (timestampInput) timestampInput.focus();
-    if (syncCode) {
-      loadFromCloud();
+    if (excelFileInput) {
+      excelFileInput.addEventListener('change', handleExcelImport);
     }
-  }
-</script>
 
+    function handleExcelImport(evt) {
+      const file = evt.target.files[0];
+      if (!file) return;
 
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const data = e.target.result;
+        const workbook = XLSX.read(data, { type: 'binary' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
 
+        const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: false });
+
+        let imported = 0;
+
+        for (let i = 1; i < rows.length; i++) {
+          const row = rows[i];
+          if (!row || row.length < 3) continue;
+
+          const tsStr  = row[0];
+          const sysStr = row[1];
+          const diaStr = row[2];
+
+          if (!tsStr || !sysStr || !diaStr) continue;
+
+          const parsedTs = parseExcelTimestamp(tsStr);
+          if (!parsedTs) continue;
+
+          const sys = parseInt(sysStr, 10);
+          const dia = parseInt(diaStr, 10);
+          if (isNaN(sys) || isNaN(dia)) continue;
+
+          measurements.push({
+            timestampRaw: parsedTs.raw,
+            timestamp: parsedTs.display,
+            sys,
+            dia
+          });
+          imported++;
+        }
+
+        if (imported === 0) {
+          alert('Es wurden keine gültigen Messungen aus der Excel-Datei gelesen.');
+          return;
+        }
+
+        measurements.sort((a, b) => a.timestampRaw.localeCompare(b.timestampRaw));
+        renderAll();
+        persistData();
+      };
+
+      reader.readAsBinaryString(file);
+    }
+
+    // ==========================
+    // CSV-Import
+    // ==========================
+
+    if (importCsvBtn) {
+      importCsvBtn.addEventListener('click', () => {
+        csvFileInput.value = '';
+        csvFileInput.click();
+      });
+    }
+
+    if (csvFileInput) {
+      csvFileInput.addEventListener('change', handleCsvImport);
+    }
+
+    function handleCsvImport(evt) {
+      const file = evt.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const text = e.target.result;
+        const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
+        if (lines.length === 0) {
+          alert('Die CSV-Datei ist leer.');
+          return;
+        }
+
+        const dataLines = lines;
+        const sample = dataLines[0];
+        const delimiter = sample.indexOf(';') !== -1 ? ';' : ',';
+
+        let imported = 0;
+
+        for (let i = 0; i < dataLines.length; i++) {
+          const line = dataLines[i];
+          const parts = line.split(delimiter);
+          if (parts.length < 3) continue;
+
+          const tsStr  = parts[0].trim();
+          const sysStr = parts[1].trim();
+          const diaStr = parts[2].trim();
+
+          if (!tsStr || !sysStr || !diaStr) continue;
+
+          const parsedTs = parseExcelTimestamp(tsStr);
+          if (!parsedTs) continue;
+
+          const sys = parseInt(sysStr, 10);
+          const dia = parseInt(diaStr, 10);
+          if (isNaN(sys) || isNaN(dia)) continue;
+
+          measurements.push({
+            timestampRaw: parsedTs.raw,
+            timestamp: parsedTs.display,
+            sys,
+            dia
+          });
+          imported++;
+        }
+
+        if (imported === 0) {
+          alert('Es wurden keine gültigen Messungen aus der CSV-Datei gelesen.');
+          return;
+        }
+
+        measurements.sort((a, b) => a.timestampRaw.localeCompare(b.timestampRaw));
+        renderAll();
+        persistData();
+      };
+
+      reader.readAsText(file, 'utf-8');
+    }
+
+    // ==========================
+    // Alles neu zeichnen
+    // ==========================
+
+    function renderAll() {
+      renderDetailsTable();
+      renderOverview();
+      updateChart();
+    }
+
+    // ==========================
+    // App-Initialisierung (wird NUR nach Login aufgerufen)
+    // ==========================
+
+    function initApp() {
+      // Nur beim ersten Aufruf sinnvoll laden; Mehrfachaufrufe führen aber nur zu doppelten Einträgen, nicht zu Fehlern
+      if (measurements.length === 0) {
+        loadFromLocalStorage();
+        loadSyncCodeFromLocal();
+      }
+      renderAll();
+      setNowToTimestamp();
+      if (timestampInput) timestampInput.focus();
+      if (syncCode) {
+        loadFromCloud();
+      }
+    }
+  </script>
 </body>
 </html>
