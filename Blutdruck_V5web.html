@@ -2,7 +2,6 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Blutdruck-Tagebuch</title>
 
@@ -56,7 +55,7 @@
       border: 1px solid rgba(148, 163, 184, 0.7);
       box-shadow: 0 24px 60px rgba(15, 23, 42, 0.25);
       overflow: hidden;
-      display: none; /* <--- WICHTIG: zuerst verstecken */
+      display: none; /* zuerst verstecken */
     }
 
     .layout {
@@ -162,6 +161,9 @@
       margin-top: auto;
       font-size: 0.72rem;
       color: #9ca3af;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
 
     .sidebar-footer strong {
@@ -336,7 +338,7 @@
       color: var(--text-muted);
       font-size: 0.75rem;
       text-transform: uppercase;
-      letter-spacing: 0.06em;
+      letterspacing: 0.06em;
     }
 
     tbody tr:hover {
@@ -404,12 +406,13 @@
     .btn-ghost {
       background: transparent;
       color: var(--text-muted);
-      border: 1px solid transparent;
+      border: 1px solid rgba(148, 163, 184, 0.4);
       padding-inline: 10px;
     }
 
     .btn-ghost:hover {
       color: var(--accent);
+      border-color: var(--accent);
     }
 
     .btn-sm {
@@ -621,17 +624,18 @@
           </div>
         </div>
         <div class="sidebar-footer">
-          <strong>Tipp:</strong> Daten bleiben im Browser gespeichert.
+          <div>
+            <strong>Tipp:</strong> Daten bleiben im Browser gespeichert.
+          </div>
+          <button id="logoutButton" class="btn btn-ghost btn-sm">
+            Abmelden
+          </button>
         </div>
       </aside>
 
       <!-- Hauptbereich -->
       <div class="main">
-        <header class="main-header">
-          <button id="logoutButton" class="btn btn-ghost btn-sm">
-            Abmelden
-          </button>
-        </header>
+        <header class="main-header"></header>
         <main class="content">
           <!-- ÜBERSICHT -->
           <section id="view-overview" class="view active">
@@ -820,7 +824,7 @@
     const loginButton  = document.getElementById("loginButton");
     const loginError   = document.getElementById("loginError");
     const appShell     = document.querySelector(".app-shell");
-    const logoutButton = document.getElementById("logoutButton"); // NEU
+    const logoutButton = document.getElementById("logoutButton");
 
     // Beim Laden der Seite Login-Status prüfen und ggf. Login-Overlay anzeigen
     window.addEventListener("load", () => {
@@ -1881,7 +1885,6 @@
     // ==========================
 
     function initApp() {
-      // Nur beim ersten Aufruf sinnvoll laden; Mehrfachaufrufe führen aber nur zu doppelten Einträgen, nicht zu Fehlern
       if (measurements.length === 0) {
         loadFromLocalStorage();
         loadSyncCodeFromLocal();
@@ -1896,3 +1899,4 @@
   </script>
 </body>
 </html>
+
