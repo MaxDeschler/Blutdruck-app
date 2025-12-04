@@ -798,6 +798,46 @@
   </div>
 
   <script>
+    // ======================
+// LOGIN / PASSWORTSCHUTZ
+// ======================
+
+// Passwort festlegen:
+const APP_PASSWORD = "1234"; // <-- ÄNDERN!
+
+const loginOverlay = document.getElementById("loginOverlay");
+const loginInput   = document.getElementById("loginPasswordInput");
+const loginButton  = document.getElementById("loginButton");
+const loginError   = document.getElementById("loginError");
+
+const LOGIN_KEY = "blutdruck_logged_in";
+
+// Prüfen, ob Benutzer schon eingeloggt ist
+if (localStorage.getItem(LOGIN_KEY) === "1") {
+  loginOverlay.style.display = "none"; // Login ausblenden
+} else {
+  loginOverlay.style.display = "flex"; // Login anzeigen
+}
+
+// Login-Button
+loginButton.addEventListener("click", checkPassword);
+loginInput.addEventListener("keypress", function (e) {
+  if (e.key === "Enter") checkPassword();
+});
+
+function checkPassword() {
+  const entered = loginInput.value.trim();
+
+  if (entered === APP_PASSWORD) {
+    localStorage.setItem(LOGIN_KEY, "1");
+    loginOverlay.style.display = "none"; // App anzeigen
+  } else {
+    loginError.style.display = "block";
+    loginInput.value = "";
+    loginInput.focus();
+  }
+}
+
   // ==========================
   // Firebase Initialisierung
   // ==========================
