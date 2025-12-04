@@ -567,6 +567,79 @@
         transform: translateY(0);
       }
     }
+    /* --- Basis-Layout --- */
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+.app-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+/* Wenn du Bereiche nebeneinander hast, z.B. Formular + Auswertung */
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+/* Tabellen: auf schmalen Screens scrollbar statt „zerquetscht“ */
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+/* Buttons & Inputs: gut zu treffen mit dem Finger */
+button,
+input,
+select,
+textarea {
+  font-size: 1rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  box-sizing: border-box;
+}
+
+/* --- Responsive für Handy / iPhone --- */
+
+@media (max-width: 768px) {
+  .app-container {
+    padding: 0.5rem;
+  }
+
+  .grid-2 {
+    grid-template-columns: 1fr; /* untereinander statt nebeneinander */
+  }
+
+  h1, h2, h3 {
+    text-align: center;
+  }
+
+  /* Alles soll die komplette Breite nutzen */
+  form,
+  .card,
+  .panel,
+  .chart-container {
+    width: 100%;
+  }
+
+  input,
+  select,
+  button,
+  textarea {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+
+  table {
+    font-size: 0.85rem;
+  }
+}
+
   </style>
 </head>
 <body>
