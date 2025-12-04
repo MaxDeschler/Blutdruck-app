@@ -798,45 +798,82 @@
   </div>
 
   <script>
-    // ======================
-// LOGIN / PASSWORTSCHUTZ
-// ======================
+  // ======================
+  // LOGIN / PASSWORTSCHUTZ (Overlay)
+  // ======================
 
-// Passwort festlegen:
-const APP_PASSWORD = "1234"; // <-- ÄNDERN!
+  // Passwort hier festlegen:
+  const APP_PASSWORD = "1234"; // <--- ÄNDERN!
 
-const loginOverlay = document.getElementById("loginOverlay");
-const loginInput   = document.getElementById("loginPasswordInput");
-const loginButton  = document.getElementById("loginButton");
-const loginError   = document.getElementById("loginError");
+  // Merker, ob auf diesem Gerät schon eingeloggt wurde
+  const LOGIN_KEY = "blutdruck_logged_in";
 
-const LOGIN_KEY = "blutdruck_logged_in";
+  // Login-Elemente aus dem DOM
+  const loginOverlay = document.getElementById("loginOverlay");
+  const loginInput   = document.getElementById("loginPasswordInput");
+  const loginButton  = document.getElementById("loginButton");
+  const loginError   = document.getElementById("loginError");
+  const appShell     = document.querySelector(".app-shell");
 
-// Prüfen, ob Benutzer schon eingeloggt ist
-if (localStorage.getItem(LOGIN_KEY) === "1") {
-  loginOverlay.style.display = "none"; // Login ausblenden
-} else {
-  loginOverlay.style.display = "flex"; // Login anzeigen
-}
+  // Beim Laden der Seite Login-Status prüfen und ggf. Login-Overlay anzeigen
+  window.addEventListener("load", () => {
+    // Event-Handler für den Login-Button und Enter-Taste
+    if (loginButton && loginInput) {
+      loginButton.addEventListener("click", handleLogin);
+      loginInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+          handleLogin();
+        }
+      });
+    }
 
-// Login-Button
-loginButton.addEventListener("click", checkPassword);
-loginInput.addEventListener("keypress", function (e) {
-  if (e.key === "Enter") checkPassword();
-});
+    // Schon eingeloggt?
+    let alreadyLoggedIn = false;
+    try {
+      alreadyLoggedIn = localStorage.getItem(LOGIN_KEY) === "1";
+    } catch (e) {
+      console.error("Konnte Login-Status nicht lesen:", e);
+    }
 
-function checkPassword() {
-  const entered = loginInput.value.trim();
+    if (alreadyLoggedIn) {
+      showApp();
+    } else {
+      // App verstecken, Login-Overlay anzeigen
+      if (appShell) appShell.style.display = "none";
+      if (loginOverlay) loginOverlay.style.display = "flex";
+      if (loginInput) loginInput.focus();
+    }
+  });
 
-  if (entered === APP_PASSWORD) {
-    localStorage.setItem(LOGIN_KEY, "1");
-    loginOverlay.style.display = "none"; // App anzeigen
-  } else {
-    loginError.style.display = "block";
-    loginInput.value = "";
-    loginInput.focus();
+  function handleLogin() {
+    if (!loginInput || !loginOverlay || !appShell) return;
+
+    const entered = loginInput.value.trim();
+
+    if (entered === APP_PASSWORD) {
+      // Richtiges Passwort
+      try {
+        localStorage.setItem(LOGIN_KEY, "1");
+      } catch (e) {
+        console.error("Konnte Login-Status nicht speichern:", e);
+      }
+      showApp();
+    } else {
+      // Falsches Passwort
+      if (loginError) loginError.style.display = "block";
+      loginInput.value = "";
+      loginInput.focus();
+    }
   }
-}
+
+  function showApp() {
+    // Login-Overlay ausblenden
+    if (loginOverlay) loginOverlay.style.display = "none";
+    // App anzeigen
+    if (appShell) appShell.style.display = "flex";
+    // App-Logik starten (Daten laden, Chart etc.)
+    initApp();
+  }
 
   // ==========================
   // Firebase Initialisierung
@@ -854,14 +891,6 @@ function checkPassword() {
 
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
-
-  // ==========================
-  // Einfacher Passwort-Schutz
-  // ==========================
-
-  // HIER DEIN PASSWORT EINTRAGEN:
-  const APP_PASSWORD = "MeinBlutdruckPasswort123";   // <--- ändern, wie du magst
-  const LOGIN_STORAGE_KEY = "blutdruck_login_ok_v1"; // merkt sich "eingeloggt" im Browser
 
   // ==========================
   // Basis-Variablen
@@ -938,6 +967,7 @@ function checkPassword() {
   // ==========================
 
   function setNowToTimestamp() {
+    if (!timestampInput) return;
     const now = new Date();
     const pad = (n) => String(n).padStart(2, '0');
     const yyyy = now.getFullYear();
@@ -1041,7 +1071,9 @@ function checkPassword() {
       });
 
       fileHandle = handle;
-      fileStatusSpan.textContent = 'Verbunden mit: ' + (handle.name || 'blutdruck.json');
+      if (fileStatusSpan) {
+        fileStatusSpan.textContent = 'Verbunden mit: ' + (handle.name || 'blutdruck.json');
+      }
 
       // Vorhandene Datei einlesen
       try {
@@ -1239,12 +1271,12 @@ function checkPassword() {
 
   function resetForm() {
     setNowToTimestamp();
-    sysInput.value = '';
-    diaInput.value = '';
+    if (sysInput) sysInput.value = '';
+    if (diaInput) diaInput.value = '';
     editIndex = null;
-    addUpdateBtn.textContent = 'Messung hinzufügen';
-    cancelEditBtn.style.display = 'none';
-    timestampInput.focus();
+    if (addUpdateBtn) addUpdateBtn.textContent = 'Messung hinzufügen';
+    if (cancelEditBtn) cancelEditBtn.style.display = 'none';
+    if (timestampInput) timestampInput.focus();
   }
 
   // ==========================
@@ -1344,13 +1376,14 @@ function checkPassword() {
 
   function startEdit(index) {
     const m = measurements[index];
-    timestampInput.value = m.timestampRaw;
-    sysInput.value = m.sys;
-    diaInput.value = m.dia;
+    if (!m) return;
+    if (timestampInput) timestampInput.value = m.timestampRaw;
+    if (sysInput) sysInput.value = m.sys;
+    if (diaInput) diaInput.value = m.dia;
     editIndex = index;
-    addUpdateBtn.textContent = 'Messung aktualisieren';
-    cancelEditBtn.style.display = 'inline-block';
-    timestampInput.focus();
+    if (addUpdateBtn) addUpdateBtn.textContent = 'Messung aktualisieren';
+    if (cancelEditBtn) cancelEditBtn.style.display = 'inline-block';
+    if (timestampInput) timestampInput.focus();
     setActiveView('overview');
   }
 
@@ -1410,17 +1443,17 @@ function checkPassword() {
     }
 
     const n = measurements.length;
-    totalCountSpan.textContent = n;
-    totalCountPill.textContent = `${n} Messung${n === 1 ? '' : 'en'}`;
+    if (totalCountSpan) totalCountSpan.textContent = n;
+    if (totalCountPill) totalCountPill.textContent = `${n} Messung${n === 1 ? '' : 'en'}`;
 
     if (n === 0) {
-      avgSysSpan.textContent = '–';
-      avgDiaSpan.textContent = '–';
+      if (avgSysSpan) avgSysSpan.textContent = '–';
+      if (avgDiaSpan) avgDiaSpan.textContent = '–';
     } else {
       const sumSys = measurements.reduce((acc, m) => acc + m.sys, 0);
       const sumDia = measurements.reduce((acc, m) => acc + m.dia, 0);
-      avgSysSpan.textContent = (sumSys / n).toFixed(1);
-      avgDiaSpan.textContent = (sumDia / n).toFixed(1);
+      if (avgSysSpan) avgSysSpan.textContent = (sumSys / n).toFixed(1);
+      if (avgDiaSpan) avgDiaSpan.textContent = (sumDia / n).toFixed(1);
     }
   }
 
@@ -1465,6 +1498,7 @@ function checkPassword() {
   // ==========================
 
   function updateChart() {
+    if (!chartCanvas) return;
     const labels    = measurements.map(m => m.timestamp);
     const sysValues = measurements.map(m => m.sys);
     const diaValues = measurements.map(m => m.dia);
@@ -1805,7 +1839,7 @@ function checkPassword() {
   }
 
   // ==========================
-  // App-Initialisierung & Passwort
+  // App-Initialisierung (wird NUR nach Login aufgerufen)
   // ==========================
 
   function initApp() {
@@ -1818,32 +1852,8 @@ function checkPassword() {
       loadFromCloud();
     }
   }
-
-  function requirePasswordAndInit() {
-    try {
-      if (localStorage.getItem(LOGIN_STORAGE_KEY) === '1') {
-        initApp();
-        return;
-      }
-    } catch (e) {
-      console.error('Konnte Login-Status nicht lesen:', e);
-    }
-
-    const entered = prompt('Bitte Passwort eingeben:');
-    if (entered === APP_PASSWORD) {
-      try {
-        localStorage.setItem(LOGIN_STORAGE_KEY, '1');
-      } catch (e) {
-        console.error('Konnte Login-Status nicht speichern:', e);
-      }
-      initApp();
-    } else {
-      alert('Falsches Passwort. Die Seite bleibt gesperrt.');
-    }
-  }
-
-  window.addEventListener('load', requirePasswordAndInit);
 </script>
+
 
 
 </body>
