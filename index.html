@@ -282,6 +282,13 @@
       }
     }
 
+    @media (max-width: 768px) {
+      /* Diagramm-Karte auf kleinen Screens komplett ausblenden */
+      .chart-card {
+        display: none;
+      }
+    }
+
     @media (max-width: 600px) {
       .form-row {
         flex-direction: column;
@@ -643,7 +650,7 @@
     </div>
   </div>
 
-  <!-- APP (Desktop + Mobile via CSS) -->
+  <!-- APP -->
   <div class="app-shell">
     <div class="layout">
       <aside class="sidebar">
@@ -716,7 +723,8 @@
               <p id="formError" class="form-error" style="display:none;"></p>
             </div>
 
-            <div class="card">
+            <!-- Diagramm-Karte -> auf Mobile via CSS ausgeblendet -->
+            <div class="card chart-card">
               <div class="card-header">
                 <div>
                   <div class="card-title">Diagramm</div>
@@ -1472,8 +1480,6 @@
 
       const n = measurements.length;
 
-      // measurements ist bereits nach timestampRaw aufsteigend sortiert
-      // -> wir gehen rückwärts für neueste oben
       for (let i = n - 1; i >= 0; i--) {
         const m = measurements[i];
         const tr = document.createElement('tr');
@@ -1660,6 +1666,16 @@
 
     function updateChart() {
       if (!chartCanvas) return;
+
+      // auf mobilen Geräten (Breite <= 768px) KEIN Diagramm anzeigen / rendern
+      const isMobile = window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
+      if (isMobile) {
+        if (bpChart) {
+          bpChart.destroy();
+          bpChart = null;
+        }
+        return;
+      }
 
       if (measurements.length === 0) {
         if (bpChart) {
