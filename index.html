@@ -8,6 +8,8 @@
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script> 
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+
 
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -1050,8 +1052,6 @@
     // LOGIN / PASSWORTSCHUTZ
     // ======================
 
-    const APP_PASSWORD = "jfkdal-eirhfhods-jdiohfjdj";
-    const LOGIN_KEY = "blutdruck_logged_in";
 
     const loginOverlay = document.getElementById("loginOverlay");
     const loginInput   = document.getElementById("loginPasswordInput");
@@ -1072,26 +1072,96 @@
 
     const isMobile = detectMobile();
 
-    window.addEventListener("load", () => {
-      if (loginButton && loginInput) {
-        loginButton.addEventListener("click", handleLogin);
-        loginInput.addEventListener("keypress", (e) => {
-          if (e.key === "Enter") {
-            handleLogin();
-          }
-        });
+    // ======================
+// LOGIN mit Firebase Auth
+// ======================
+
+const loginOverlay = document.getElementById("loginOverlay");
+const loginButton  = document.getElementById("loginButton");
+const loginError   = document.getElementById("loginError");
+
+const desktopShell = document.querySelector(".app-shell");
+const mobileShell  = document.querySelector(".mobile-shell");
+
+// einfache Mobile-Erkennung
+const isMobile = /Mobi|Android|iPhone|iPod/i.test(navigator.userAgent) || window.innerWidth < 768;
+
+// Auth-Objekt
+const auth = firebase.auth();
+
+window.addEventListener("load", () => {
+  // Wenn sich der Auth-Status ändert (einloggen / ausloggen)
+  auth.onAuthStateChanged((user) => {
+    if (user) {
+      // eingeloggt
+      showApp();
+      loginError.style.display = "none";
+    } else {
+      // nicht eingeloggt → App verstecken, Login anzeigen
+      if (desktopShell) desktopShell.style.display = "none";
+      if (mobileShell)  mobileShell.style.display  = "none";
+      if (loginOverlay) loginOverlay.style.display = "flex";
+    }
+  });
+
+  if (loginButton) {
+    loginButton.addEventListener("click", handleLogin);
+  }
+
+  const logoutButton = document.getElementById("logoutButton");
+  if (logoutButton) {
+    logoutButton.addEventListener("click", handleLogout);
+  }
+});
+
+function handleLogin() {
+  // Beispiel: Google-Login
+  const provider = new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(provider)
+    .then(() => {
+      // Erfolg → onAuthStateChanged zeigt App an
+    })
+    .catch((error) => {
+      console.error("Login-Fehler:", error);
+      if (loginError) {
+        loginError.textContent = "Login fehlgeschlagen: " + (error.message || "");
+        loginError.style.display = "block";
       }
+    });
+}
+
+function handleLogout() {
+  auth.signOut()
+    .catch((error) => {
+      console.error("Logout-Fehler:", error);
+    });
+}
+
+function showApp() {
+  if (loginOverlay) loginOverlay.style.display = "none";
+
+  if (isMobile) {
+    if (desktopShell) desktopShell.style.display = "none";
+    if (mobileShell)  mobileShell.style.display  = "block";
+    initMobileApp();
+  } else {
+    if (mobileShell)  mobileShell.style.display  = "none";
+    if (desktopShell) desktopShell.style.display = "flex";
+    initApp();
+  }
+}
+
 
       if (logoutButton) {
         logoutButton.addEventListener("click", handleLogout);
       }
 
       let alreadyLoggedIn = false;
-      try {
+      /*try {
         alreadyLoggedIn = localStorage.getItem(LOGIN_KEY) === "1";
       } catch (e) {
         console.error("Konnte Login-Status nicht lesen:", e);
-      }
+      }*/
 
       if (alreadyLoggedIn) {
         showApp();
@@ -1103,14 +1173,14 @@
       }
     });
 
-    function handleLogin() {
+    /*function handleLogin() {
       if (!loginInput || !loginOverlay) return;
 
       const entered = loginInput.value.trim();
 
       if (entered === APP_PASSWORD) {
         try {
-          localStorage.setItem(LOGIN_KEY, "1");
+          localStorage.setItem(, "1");
         } catch (e) {
           console.error("Konnte Login-Status nicht speichern:", e);
         }
@@ -1120,7 +1190,7 @@
         loginInput.value = "";
         loginInput.focus();
       }
-    }
+    }*/
 
     function showApp() {
       if (loginOverlay) loginOverlay.style.display = "none";
@@ -1136,9 +1206,9 @@
       }
     }
 
-    function handleLogout() {
+    /*function handleLogout() {
       try {
-        localStorage.removeItem(LOGIN_KEY);
+        localStorage.removeItem();
       } catch (e) {
         console.error("Konnte Login-Status nicht löschen:", e);
       }
@@ -1156,7 +1226,7 @@
       if (loginError) {
         loginError.style.display = "none";
       }
-    }
+    }*/
 
     // ==========================
     // Firebase
@@ -1477,10 +1547,55 @@
     // ==========================
 
     async function loadFromCloud() {
-      if (!syncCode) {
-        console.log('Kein Sync-Code gesetzt, überspringe Cloud-Load.');
-        return;
+  const user = auth.currentUser;
+  if (!user) {
+    console.log("Kein Benutzer eingeloggt, überspringe Cloud-Load.");
+    setCloudStatus("Nicht eingeloggt – keine Cloud-Daten.");
+    return;
+  }
+
+  try {
+    const docRef = db.collection("users").doc(user.uid);
+    const docSnap = await docRef.get();
+
+    if (!docSnap.exists) {
+      console.log("Noch keine Cloud-Daten für diesen Benutzer.");
+      setCloudStatus("Cloud-Sync aktiv – noch keine Daten in der Cloud.");
+      return;
+    }
+
+    const data = docSnap.data();
+    if (!data || !Array.isArray(data.measurements)) {
+      setCloudStatus("Cloud-Sync aktiv – ungültige Cloud-Daten.");
+      return;
+    }
+
+    measurements.length = 0;
+    data.measurements.forEach((m) => {
+      if (
+        m &&
+        typeof m.timestampRaw === "string" &&
+        typeof m.timestamp === "string" &&
+        typeof m.sys === "number" &&
+        typeof m.dia === "number"
+      ) {
+        measurements.push(m);
       }
+    });
+
+    measurements.sort((a, b) => a.timestampRaw.localeCompare(b.timestampRaw));
+    renderAll();
+    saveToLocalStorage();
+
+    setCloudStatus("Cloud-Daten geladen: " + new Date().toLocaleString());
+    console.log("Daten aus Cloud geladen.");
+  } catch (e) {
+    console.error("Fehler beim Laden aus der Cloud:", e);
+    setCloudStatus("Cloud-Fehler beim Laden: " + (e.message || e));
+    alert("Fehler beim Laden aus der Cloud. Details in der Konsole.");
+  }
+}
+
 
       try {
         const docRef = db.collection('measurements').doc(syncCode);
@@ -1521,9 +1636,28 @@
     }
 
     async function saveToCloud() {
-      if (!syncCode) {
-        return;
-      }
+  const user = auth.currentUser;
+  if (!user) {
+    // Nicht eingeloggt → kein Cloud-Save
+    setCloudStatus("Nicht eingeloggt – keine Cloud-Speicherung.");
+    return;
+  }
+
+  try {
+    const docRef = db.collection("users").doc(user.uid);
+    await docRef.set({
+      measurements: measurements
+    });
+
+    const ts = new Date().toLocaleString();
+    setCloudStatus("Zuletzt in Cloud gespeichert: " + ts);
+    console.log("Daten in Cloud gespeichert.");
+  } catch (e) {
+    console.error("Fehler beim Speichern in der Cloud:", e);
+    setCloudStatus("Cloud-Fehler beim Speichern: " + (e.message || e));
+  }
+}
+
 
       try {
         const docRef = db.collection('measurements').doc(syncCode);
@@ -2295,22 +2429,15 @@
     // ==========================
 
     function initShared() {
-      if (measurements.length === 0) {
-        loadFromLocalStorage();
-        loadSyncCodeFromLocal();
-      }
+  if (measurements.length === 0) {
+    loadFromLocalStorage();
+  }
 
-      if (syncCode) {
-        setCloudStatus('Cloud-Sync aktiv (Code: ' + syncCode + ') – lade Daten...');
-      } else {
-        setCloudStatus('Cloud-Sync: inaktiv');
-      }
+  setCloudStatus("Cloud-Sync aktiv (angemeldeter Benutzer) – lade Daten...");
+  renderAll();
+  loadFromCloud();
+}
 
-      renderAll();
-      if (syncCode) {
-        loadFromCloud();
-      }
-    }
 
     function initApp() {
       initShared();
