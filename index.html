@@ -2,14 +2,13 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" /> 
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Blutdruck-Tagebuch</title>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script> 
+  <!-- Firebase SDKs (Compat) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-
 
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -29,7 +28,7 @@
       --text-main: #0f172a;
       --text-muted: #64748b;
       --danger: #dc2626;
-      --danger-soft: rgba(248, 113, 113, 0.18); 
+      --danger-soft: rgba(248, 113, 113, 0.18);
     }
 
     * {
@@ -56,15 +55,13 @@
       border: 1px solid rgba(148, 163, 184, 0.7);
       box-shadow: 0 24px 60px rgba(15, 23, 42, 0.25);
       overflow: hidden;
-      display: none; /* Desktop/Tablet-App – wird per JS angezeigt */
+      display: none; /* wird per JS angezeigt */
     }
 
     .layout {
       display: flex;
       width: 100%;
     }
-
-    /* Sidebar links */
 
     .sidebar {
       width: 220px;
@@ -154,7 +151,7 @@
       background: #0b1120;
     }
 
-    .nav-button:hover:not(.active) {
+    .nav-button:hover:not(.active)) {
       background: rgba(31, 41, 55, 0.8);
     }
 
@@ -170,8 +167,6 @@
     .sidebar-footer strong {
       color: #e5e7eb;
     }
-
-    /* Main content */
 
     .main {
       flex: 1;
@@ -316,8 +311,6 @@
       margin-left: 4px;
     }
 
-    /* Tabellen */
-
     table {
       width: 100%;
       border-collapse: collapse;
@@ -328,7 +321,8 @@
       background: var(--surface-muted);
     }
 
-    th, td {
+    th,
+    td {
       padding: 6px 8px;
       text-align: left;
       border-bottom: 1px solid rgba(148, 163, 184, 0.6);
@@ -357,7 +351,6 @@
       padding: 10px 0;
     }
 
-    /* Grenzwerte rot markieren */
     .row-high {
       background: var(--danger-soft) !important;
     }
@@ -366,8 +359,6 @@
       color: var(--danger);
       font-weight: 600;
     }
-
-    /* Buttons */
 
     .btn {
       border-radius: 999px;
@@ -437,8 +428,6 @@
       gap: 6px;
     }
 
-    /* Formular */
-
     .form-row {
       display: flex;
       gap: 10px;
@@ -478,7 +467,6 @@
       box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.5);
     }
 
-    /* Diagramm (nur Desktop) */
     .chart-container {
       margin-top: 10px;
       background: #ffffff;
@@ -495,7 +483,6 @@
       display: block;
     }
 
-    /* Login-Overlay (Passwort-Schutz) */
     .login-overlay {
       position: fixed;
       inset: 0;
@@ -569,72 +556,8 @@
       }
     }
 
-    .app-container {
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 1rem;
-    }
-
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.5rem;
-    }
-
-    .table-wrapper {
-      width: 100%;
-      overflow-x: auto;
-    }
-
-    button,
-    input,
-    select,
-    textarea {
-      font-size: 1rem;
-      padding: 0.5rem 0.75rem;
-      border-radius: 0.5rem;
-      box-sizing: border-box;
-    }
-
-    @media (max-width: 768px) {
-      .app-container {
-        padding: 0.5rem;
-      }
-
-      .grid-2 {
-        grid-template-columns: 1fr;
-      }
-
-      h1, h2, h3 {
-        text-align: center;
-      }
-
-      form,
-      .card,
-      .panel,
-      .chart-container {
-        width: 100%;
-      }
-
-      input,
-      select,
-      button,
-      textarea {
-        width: 100%;
-        margin-bottom: 0.5rem;
-      }
-
-      table {
-        font-size: 0.85rem;
-      }
-    }
-
-    /* ==============================
-       MOBILE-SHELL – EINFACHE HANDY-ANSICHT
-       ============================== */
-
     .mobile-shell {
-      display: none; /* wird per JS bzw. Media Query ein-/ausgeblendet */
+      display: none;
       width: 100%;
       max-width: 480px;
       margin: 0 auto;
@@ -715,11 +638,6 @@
     .mobile-table-wrapper tr.row-high {
       background: var(--danger-soft);
     }
-
-    /* =========================================
-       HARD SWITCH: Unter 800px nur mobile-shell,
-       kein Diagramm, keine Desktop-App
-       ========================================= */
 
     @media (max-width: 800px) {
       .app-shell {
@@ -828,8 +746,16 @@
                 <div class="form-group">
                   <label>&nbsp;</label>
                   <div class="btn-row">
-                    <button id="addUpdateBtn" class="btn btn-primary">Messung hinzufügen</button>
-                    <button id="cancelEditBtn" class="btn btn-ghost btn-sm" style="display:none;">Bearbeitung abbrechen</button>
+                    <button id="addUpdateBtn" class="btn btn-primary">
+                      Messung hinzufügen
+                    </button>
+                    <button
+                      id="cancelEditBtn"
+                      class="btn btn-ghost btn-sm"
+                      style="display:none;"
+                    >
+                      Bearbeitung abbrechen
+                    </button>
                   </div>
                 </div>
               </div>
@@ -867,7 +793,11 @@
                       </tr>
                     </thead>
                     <tbody>
-                      <tr><td colspan="4" class="table-muted">Noch keine Messungen erfasst.</td></tr>
+                      <tr>
+                        <td colspan="4" class="table-muted">
+                          Noch keine Messungen erfasst.
+                        </td>
+                      </tr>
                     </tbody>
                   </table>
                 </div>
@@ -912,21 +842,20 @@
             <div class="card">
               <div class="card-header">
                 <div>
-                  <div class="card-title">Speicherung & Sync</div>
-                  <div class="card-subtitle">Browser, optionale JSON-Datei & Cloud-Synchronisation</div>
+                  <div class="card-title">Speicherung & Cloud</div>
+                  <div class="card-subtitle">
+                    Browser, optionale JSON-Datei & Firebase Cloud-Sync
+                  </div>
                 </div>
               </div>
               <div class="form-row" style="margin-bottom:0; align-items:flex-end;">
-                <div class="form-group">
-                  <label for="syncCodeInput">Sync-Code</label>
-                  <input type="text" id="syncCodeInput" placeholder="z.B. MEINBLUTDRUCK2025" />
-                </div>
-                <button id="saveSyncCodeBtn" class="btn btn-outline btn-sm">Sync-Code speichern</button>
-
-                <button id="connectFileBtn" class="btn btn-outline btn-sm">JSON-Datei auswählen / erstellen</button>
-                <span id="fileStatus" class="card-subtitle">Keine JSON-Datei verbunden.</span>
+                <button id="connectFileBtn" class="btn btn-outline btn-sm">
+                  JSON-Datei auswählen / erstellen
+                </button>
+                <span id="fileStatus" class="card-subtitle">
+                  Keine JSON-Datei verbunden.
+                </span>
               </div>
-              <!-- Cloud-Status Desktop -->
               <p id="cloudStatusDesktop" class="card-subtitle" style="margin-top:8px;">
                 Cloud-Sync: inaktiv
               </p>
@@ -936,16 +865,38 @@
               <div class="card-header">
                 <div>
                   <div class="card-title">Alle Messungen</div>
-                  <div class="card-subtitle">Volle Liste mit Bearbeitung & Import/Export</div>
+                  <div class="card-subtitle">
+                    Volle Liste mit Bearbeitung & Import/Export
+                  </div>
                 </div>
                 <div class="btn-row">
-                  <button id="exportJsonBtn" class="btn btn-outline btn-sm">JSON Export</button>
-                  <button id="exportCsvBtn" class="btn btn-outline btn-sm">CSV Export</button>
-                  <button id="importExcelBtn" class="btn btn-outline btn-sm">Excel Import</button>
-                  <button id="importCsvBtn" class="btn btn-outline btn-sm">CSV Import</button>
-                  <button id="clearAllBtn" class="btn btn-danger btn-sm">Alle Daten löschen</button>
-                  <input type="file" id="excelFileInput" accept=".xlsx,.xls" style="display:none;">
-                  <input type="file" id="csvFileInput" accept=".csv" style="display:none;">
+                  <button id="exportJsonBtn" class="btn btn-outline btn-sm">
+                    JSON Export
+                  </button>
+                  <button id="exportCsvBtn" class="btn btn-outline btn-sm">
+                    CSV Export
+                  </button>
+                  <button id="importExcelBtn" class="btn btn-outline btn-sm">
+                    Excel Import
+                  </button>
+                  <button id="importCsvBtn" class="btn btn-outline btn-sm">
+                    CSV Import
+                  </button>
+                  <button id="clearAllBtn" class="btn btn-danger btn-sm">
+                    Alle Daten löschen
+                  </button>
+                  <input
+                    type="file"
+                    id="excelFileInput"
+                    accept=".xlsx,.xls"
+                    style="display:none;"
+                  />
+                  <input
+                    type="file"
+                    id="csvFileInput"
+                    accept=".csv"
+                    style="display:none;"
+                  />
                 </div>
               </div>
               <div style="overflow-x:auto;">
@@ -960,7 +911,11 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr><td colspan="5" class="table-muted">Noch keine Messungen erfasst.</td></tr>
+                    <tr>
+                      <td colspan="5" class="table-muted">
+                        Noch keine Messungen erfasst.
+                      </td>
+                    </tr>
                   </tbody>
                 </table>
               </div>
@@ -971,20 +926,19 @@
     </div>
   </div>
 
-  <!-- ==========================
-       MOBILE-APP
-       ========================== -->
+  <!-- MOBILE -->
   <div class="mobile-shell">
     <div class="mobile-card">
       <div class="mobile-header-title">Blutdruck-Tagebuch</div>
-      <div class="mobile-header-sub">Werte eingeben & Messungen ansehen</div>
+      <div class="mobile-header-sub">
+        Werte eingeben & Messungen ansehen
+      </div>
 
       <div class="mobile-nav">
         <button id="mobileTabInput" class="mobile-tab active">Eingabe</button>
         <button id="mobileTabList" class="mobile-tab">Messungen</button>
       </div>
 
-      <!-- MOBILE: Eingabe -->
       <div id="mobileViewInput" class="mobile-view active">
         <div class="form-group" style="margin-bottom:8px;">
           <label for="mTimestampInput">Zeitstempel</label>
@@ -998,12 +952,15 @@
           <label for="mDiaInput">Diastolisch (mmHg)</label>
           <input type="number" id="mDiaInput" min="30" max="150" />
         </div>
-        <button id="mAddBtn" class="btn btn-primary" style="width:100%;justify-content:center;">
+        <button
+          id="mAddBtn"
+          class="btn btn-primary"
+          style="width:100%;justify-content:center;"
+        >
           Messung speichern
         </button>
       </div>
 
-      <!-- MOBILE: Liste -->
       <div id="mobileViewList" class="mobile-view">
         <div class="mobile-table-wrapper">
           <table id="mobileDataTable">
@@ -1016,220 +973,29 @@
               </tr>
             </thead>
             <tbody>
-              <tr><td colspan="4" class="table-muted">Noch keine Messungen erfasst.</td></tr>
+              <tr>
+                <td colspan="4" class="table-muted">
+                  Noch keine Messungen erfasst.
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
       </div>
 
-      <!-- MOBILE: Sync-Code & Cloud -->
-      <div class="form-group" style="margin-top:12px;">
-        <label for="mSyncCodeInput">Sync-Code (Cloud)</label>
-        <input
-          type="text"
-          id="mSyncCodeInput"
-          placeholder="z.B. MEINBLUTDRUCK2025"
-        />
-      </div>
-      <button
-        id="mSaveSyncCodeBtn"
-        class="btn btn-outline"
-        style="width:100%;justify-content:center;margin-top:6px;"
+      <p
+        id="cloudStatusMobile"
+        class="mobile-header-sub"
+        style="margin-top:8px;"
       >
-        Sync-Code speichern
-      </button>
-
-      <!-- Cloud-Status Mobile -->
-      <p id="cloudStatusMobile" class="mobile-header-sub" style="margin-top:6px;">
         Cloud-Sync: inaktiv
       </p>
-
     </div>
   </div>
 
   <script>
-    // ======================
-    // LOGIN / PASSWORTSCHUTZ
-    // ======================
-
-
-    const loginOverlay = document.getElementById("loginOverlay");
-    const loginInput   = document.getElementById("loginPasswordInput");
-    const loginButton  = document.getElementById("loginButton");
-    const loginError   = document.getElementById("loginError");
-
-    const desktopShell = document.querySelector(".app-shell");   // Desktop/Tablet-Container
-    const mobileShell  = document.querySelector(".mobile-shell"); // Mobile-Container
-    const logoutButton = document.getElementById("logoutButton");
-
-    // robustere Mobile-Erkennung
-    function detectMobile() {
-      return (
-        navigator.maxTouchPoints > 0 &&
-        window.matchMedia("(max-width: 800px)").matches
-      );
-    }
-
-    const isMobile = detectMobile();
-
-    // ======================
-// LOGIN mit Firebase Auth
-// ======================
-
-const loginOverlay = document.getElementById("loginOverlay");
-const loginButton  = document.getElementById("loginButton");
-const loginError   = document.getElementById("loginError");
-
-const desktopShell = document.querySelector(".app-shell");
-const mobileShell  = document.querySelector(".mobile-shell");
-
-// einfache Mobile-Erkennung
-const isMobile = /Mobi|Android|iPhone|iPod/i.test(navigator.userAgent) || window.innerWidth < 768;
-
-// Auth-Objekt
-const auth = firebase.auth();
-
-window.addEventListener("load", () => {
-  // Wenn sich der Auth-Status ändert (einloggen / ausloggen)
-  auth.onAuthStateChanged((user) => {
-    if (user) {
-      // eingeloggt
-      showApp();
-      loginError.style.display = "none";
-    } else {
-      // nicht eingeloggt → App verstecken, Login anzeigen
-      if (desktopShell) desktopShell.style.display = "none";
-      if (mobileShell)  mobileShell.style.display  = "none";
-      if (loginOverlay) loginOverlay.style.display = "flex";
-    }
-  });
-
-  if (loginButton) {
-    loginButton.addEventListener("click", handleLogin);
-  }
-
-  const logoutButton = document.getElementById("logoutButton");
-  if (logoutButton) {
-    logoutButton.addEventListener("click", handleLogout);
-  }
-});
-
-function handleLogin() {
-  // Beispiel: Google-Login
-  const provider = new firebase.auth.GoogleAuthProvider();
-  auth.signInWithPopup(provider)
-    .then(() => {
-      // Erfolg → onAuthStateChanged zeigt App an
-    })
-    .catch((error) => {
-      console.error("Login-Fehler:", error);
-      if (loginError) {
-        loginError.textContent = "Login fehlgeschlagen: " + (error.message || "");
-        loginError.style.display = "block";
-      }
-    });
-}
-
-function handleLogout() {
-  auth.signOut()
-    .catch((error) => {
-      console.error("Logout-Fehler:", error);
-    });
-}
-
-function showApp() {
-  if (loginOverlay) loginOverlay.style.display = "none";
-
-  if (isMobile) {
-    if (desktopShell) desktopShell.style.display = "none";
-    if (mobileShell)  mobileShell.style.display  = "block";
-    initMobileApp();
-  } else {
-    if (mobileShell)  mobileShell.style.display  = "none";
-    if (desktopShell) desktopShell.style.display = "flex";
-    initApp();
-  }
-}
-
-
-      if (logoutButton) {
-        logoutButton.addEventListener("click", handleLogout);
-      }
-
-      let alreadyLoggedIn = false;
-      /*try {
-        alreadyLoggedIn = localStorage.getItem(LOGIN_KEY) === "1";
-      } catch (e) {
-        console.error("Konnte Login-Status nicht lesen:", e);
-      }*/
-
-      if (alreadyLoggedIn) {
-        showApp();
-      } else {
-        if (desktopShell) desktopShell.style.display = "none";
-        if (mobileShell)  mobileShell.style.display  = "none";
-        if (loginOverlay) loginOverlay.style.display = "flex";
-        if (loginInput)   loginInput.focus();
-      }
-    });
-
-    /*function handleLogin() {
-      if (!loginInput || !loginOverlay) return;
-
-      const entered = loginInput.value.trim();
-
-      if (entered === APP_PASSWORD) {
-        try {
-          localStorage.setItem(, "1");
-        } catch (e) {
-          console.error("Konnte Login-Status nicht speichern:", e);
-        }
-        showApp();
-      } else {
-        if (loginError) loginError.style.display = "block";
-        loginInput.value = "";
-        loginInput.focus();
-      }
-    }*/
-
-    function showApp() {
-      if (loginOverlay) loginOverlay.style.display = "none";
-
-      if (isMobile) {
-        if (desktopShell) desktopShell.style.display = "none";
-        if (mobileShell)  mobileShell.style.display  = "block";
-        initMobileApp();
-      } else {
-        if (mobileShell)  mobileShell.style.display  = "none";
-        if (desktopShell) desktopShell.style.display = "flex";
-        initApp();
-      }
-    }
-
-    /*function handleLogout() {
-      try {
-        localStorage.removeItem();
-      } catch (e) {
-        console.error("Konnte Login-Status nicht löschen:", e);
-      }
-
-      if (desktopShell) desktopShell.style.display = "none";
-      if (mobileShell)  mobileShell.style.display  = "none";
-
-      if (loginOverlay) loginOverlay.style.display = "flex";
-
-      if (loginInput) {
-        loginInput.value = "";
-        loginInput.focus();
-      }
-
-      if (loginError) {
-        loginError.style.display = "none";
-      }
-    }*/
-
     // ==========================
-    // Firebase
+    // Firebase initialisieren
     // ==========================
 
     const firebaseConfig = {
@@ -1239,150 +1005,229 @@ function showApp() {
       storageBucket: "blutdrucktagebuch-30036.firebasestorage.app",
       messagingSenderId: "581659987028",
       appId: "1:581659987028:web:7e6f8e4a46e945af9071c1",
-      measurementId: "G-LN5N63RZG6"
+      measurementId: "G-LN5N63RZG6",
     };
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
+    const auth = firebase.auth();
+
+    // E-Mail des Accounts, mit dem du dich einloggst
+    // → in Firebase Console anlegen und hier eintragen
+    const LOGIN_EMAIL = "deinlogin@beispiel.de";
 
     // ==========================
-    // Basis-Variablen
+    // DOM-Referenzen Login / Shells
     // ==========================
 
-    const STORAGE_KEY = 'blutdruck_measurements_v1';
-    const SYNC_CODE_KEY = 'blutdruck_sync_code_v1';
+    const loginOverlay = document.getElementById("loginOverlay");
+    const loginInput = document.getElementById("loginPasswordInput");
+    const loginButton = document.getElementById("loginButton");
+    const loginError = document.getElementById("loginError");
 
-    const measurements = [];
-    let bpChart = null;
-    let editIndex = null;
-    let fileHandle = null;
-    let syncCode = null;
+    const desktopShell = document.querySelector(".app-shell");
+    const mobileShell = document.querySelector(".mobile-shell");
+    const logoutButton = document.getElementById("logoutButton");
+
+    const isMobile =
+      /Mobi|Android|iPhone|iPod/i.test(navigator.userAgent) ||
+      window.innerWidth < 800;
 
     // ==========================
-    // View-Handling Desktop
+    // Navigation Desktop
     // ==========================
 
-    const navButtons = document.querySelectorAll('.nav-button');
+    const navButtons = document.querySelectorAll(".nav-button");
     const views = {
-      overview: document.getElementById('view-overview'),
-      details: document.getElementById('view-details'),
+      overview: document.getElementById("view-overview"),
+      details: document.getElementById("view-details"),
     };
 
-    navButtons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const view = btn.getAttribute('data-view');
+    navButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const view = btn.getAttribute("data-view");
         setActiveView(view);
       });
     });
 
     function setActiveView(viewName) {
-      navButtons.forEach(b => {
-        b.classList.toggle('active', b.getAttribute('data-view') === viewName);
+      navButtons.forEach((b) => {
+        b.classList.toggle("active", b.getAttribute("data-view") === viewName);
       });
       Object.entries(views).forEach(([name, el]) => {
         if (!el) return;
-        el.classList.toggle('active', name === viewName);
+        el.classList.toggle("active", name === viewName);
       });
     }
 
     // ==========================
-    // DOM-Elemente Desktop
+    // Login / Logout
     // ==========================
 
-    const timestampInput = document.getElementById('timestampInput');
-    const sysInput       = document.getElementById('sysInput');
-    const diaInput       = document.getElementById('diaInput');
-    const addUpdateBtn   = document.getElementById('addUpdateBtn');
-    const cancelEditBtn  = document.getElementById('cancelEditBtn');
-    const dataTableBody  = document.querySelector('#dataTable tbody');
-    const last5TableBody = document.querySelector('#last5Table tbody');
-    const chartCanvas    = document.getElementById('bpChart');
+    function showLogin() {
+      if (loginOverlay) loginOverlay.style.display = "flex";
+      if (desktopShell) desktopShell.style.display = "none";
+      if (mobileShell) mobileShell.style.display = "none";
+      if (loginInput) loginInput.value = "";
+      if (loginError) loginError.style.display = "none";
+      if (loginInput) loginInput.focus();
+    }
 
-    const exportJsonBtn  = document.getElementById('exportJsonBtn');
-    const exportCsvBtn   = document.getElementById('exportCsvBtn');
-    const connectFileBtn = document.getElementById('connectFileBtn');
-    const fileStatusSpan = document.getElementById('fileStatus');
-    const importExcelBtn = document.getElementById('importExcelBtn');
-    const excelFileInput = document.getElementById('excelFileInput');
-    const importCsvBtn   = document.getElementById('importCsvBtn');
-    const csvFileInput   = document.getElementById('csvFileInput');
-    const clearAllBtn    = document.getElementById('clearAllBtn');
+    function showApp() {
+      if (loginOverlay) loginOverlay.style.display = "none";
+      if (isMobile) {
+        if (desktopShell) desktopShell.style.display = "none";
+        if (mobileShell) mobileShell.style.display = "block";
+        initMobileApp();
+      } else {
+        if (mobileShell) mobileShell.style.display = "none";
+        if (desktopShell) desktopShell.style.display = "flex";
+        initApp();
+      }
+    }
 
-    const avgSysSpan     = document.getElementById('avgSys');
-    const avgDiaSpan     = document.getElementById('avgDia');
-    const totalCountSpan = document.getElementById('totalCount');
-    const totalCountPill = document.getElementById('totalCountPill');
+    async function handleLogin() {
+      if (!loginInput) return;
+      const password = loginInput.value.trim();
+      if (!password) {
+        if (loginError) {
+          loginError.textContent = "Bitte Passwort eingeben.";
+          loginError.style.display = "block";
+        }
+        return;
+      }
 
-    const syncCodeInput   = document.getElementById('syncCodeInput');
-    const saveSyncCodeBtn = document.getElementById('saveSyncCodeBtn');
+      try {
+        await auth.signInWithEmailAndPassword(LOGIN_EMAIL, password);
+        // onAuthStateChanged übernimmt showApp
+      } catch (e) {
+        console.error("Login-Fehler:", e);
+        if (loginError) {
+          if (e.code === "auth/wrong-password") {
+            loginError.textContent = "Falsches Passwort – bitte versuch's nochmal.";
+          } else {
+            loginError.textContent =
+              "Login fehlgeschlagen: " + (e.message || e.code || "");
+          }
+          loginError.style.display = "block";
+        }
+      }
+    }
 
-    const cloudStatusDesktop = document.getElementById('cloudStatusDesktop');
+    async function handleLogout() {
+      try {
+        await auth.signOut();
+        // onAuthStateChanged ruft showLogin
+      } catch (e) {
+        console.error("Logout-Fehler:", e);
+      }
+    }
+
+    window.addEventListener("load", () => {
+      auth.onAuthStateChanged((user) => {
+        if (user) {
+          showApp();
+        } else {
+          showLogin();
+        }
+      });
+
+      if (loginButton) {
+        loginButton.addEventListener("click", handleLogin);
+      }
+      if (loginInput) {
+        loginInput.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") handleLogin();
+        });
+      }
+      if (logoutButton) {
+        logoutButton.addEventListener("click", handleLogout);
+      }
+    });
 
     // ==========================
-    // DOM-Elemente Mobile
+    // Gemeinsame App-Logik
     // ==========================
 
-    const mTimestampInput   = document.getElementById('mTimestampInput');
-    const mSysInput         = document.getElementById('mSysInput');
-    const mDiaInput         = document.getElementById('mDiaInput');
-    const mAddBtn           = document.getElementById('mAddBtn');
-    const mobileTabInput    = document.getElementById('mobileTabInput');
-    const mobileTabList     = document.getElementById('mobileTabList');
-    const mobileViewInput   = document.getElementById('mobileViewInput');
-    const mobileViewList    = document.getElementById('mobileViewList');
-    const mobileTableBody   = document.querySelector('#mobileDataTable tbody');
+    const STORAGE_KEY = "blutdruck_measurements_v1";
 
-    const mSyncCodeInput    = document.getElementById('mSyncCodeInput');
-    const mSaveSyncCodeBtn  = document.getElementById('mSaveSyncCodeBtn');
-    const cloudStatusMobile = document.getElementById('cloudStatusMobile');
+    const measurements = [];
+    let bpChart = null;
+    let editIndex = null;
+    let fileHandle = null;
 
-    // ==========================
-    // Cloud-Status Helper
-    // ==========================
+    const timestampInput = document.getElementById("timestampInput");
+    const sysInput = document.getElementById("sysInput");
+    const diaInput = document.getElementById("diaInput");
+    const addUpdateBtn = document.getElementById("addUpdateBtn");
+    const cancelEditBtn = document.getElementById("cancelEditBtn");
+    const dataTableBody = document.querySelector("#dataTable tbody");
+    const last5TableBody = document.querySelector("#last5Table tbody");
+    const chartCanvas = document.getElementById("bpChart");
+
+    const exportJsonBtn = document.getElementById("exportJsonBtn");
+    const exportCsvBtn = document.getElementById("exportCsvBtn");
+    const connectFileBtn = document.getElementById("connectFileBtn");
+    const fileStatusSpan = document.getElementById("fileStatus");
+    const importExcelBtn = document.getElementById("importExcelBtn");
+    const excelFileInput = document.getElementById("excelFileInput");
+    const importCsvBtn = document.getElementById("importCsvBtn");
+    const csvFileInput = document.getElementById("csvFileInput");
+    const clearAllBtn = document.getElementById("clearAllBtn");
+
+    const avgSysSpan = document.getElementById("avgSys");
+    const avgDiaSpan = document.getElementById("avgDia");
+    const totalCountSpan = document.getElementById("totalCount");
+    const totalCountPill = document.getElementById("totalCountPill");
+
+    const mTimestampInput = document.getElementById("mTimestampInput");
+    const mSysInput = document.getElementById("mSysInput");
+    const mDiaInput = document.getElementById("mDiaInput");
+    const mAddBtn = document.getElementById("mAddBtn");
+    const mobileTabInput = document.getElementById("mobileTabInput");
+    const mobileTabList = document.getElementById("mobileTabList");
+    const mobileViewInput = document.getElementById("mobileViewInput");
+    const mobileViewList = document.getElementById("mobileViewList");
+    const mobileTableBody = document.querySelector("#mobileDataTable tbody");
+
+    const cloudStatusDesktop = document.getElementById("cloudStatusDesktop");
+    const cloudStatusMobile = document.getElementById("cloudStatusMobile");
 
     function setCloudStatus(text) {
       if (cloudStatusDesktop) cloudStatusDesktop.textContent = text;
-      if (cloudStatusMobile)  cloudStatusMobile.textContent  = text;
+      if (cloudStatusMobile) cloudStatusMobile.textContent = text;
     }
-
-    // ==========================
-    // Datum / Uhrzeit
-    // ==========================
 
     function setNowToTimestamp() {
       if (!timestampInput) return;
       const now = new Date();
-      const pad = (n) => String(n).padStart(2, '0');
+      const pad = (n) => String(n).padStart(2, "0");
       const yyyy = now.getFullYear();
-      const mm   = pad(now.getMonth() + 1);
-      const dd   = pad(now.getDate());
-      const hh   = pad(now.getHours());
-      const mi   = pad(now.getMinutes());
+      const mm = pad(now.getMonth() + 1);
+      const dd = pad(now.getDate());
+      const hh = pad(now.getHours());
+      const mi = pad(now.getMinutes());
       timestampInput.value = `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
     }
 
     function setNowToTimestampMobile() {
       if (!mTimestampInput) return;
       const now = new Date();
-      const pad = (n) => String(n).padStart(2, '0');
+      const pad = (n) => String(n).padStart(2, "0");
       const yyyy = now.getFullYear();
-      const mm   = pad(now.getMonth() + 1);
-      const dd   = pad(now.getDate());
-      const hh   = pad(now.getHours());
-      const mi   = pad(now.getMinutes());
+      const mm = pad(now.getMonth() + 1);
+      const dd = pad(now.getDate());
+      const hh = pad(now.getHours());
+      const mi = pad(now.getMinutes());
       mTimestampInput.value = `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
     }
-
-    // ==========================
-    // LocalStorage
-    // ==========================
 
     function saveToLocalStorage() {
       try {
         const json = JSON.stringify(measurements);
         localStorage.setItem(STORAGE_KEY, json);
       } catch (e) {
-        console.error('Fehler beim Speichern in localStorage:', e);
+        console.error("Fehler beim Speichern in localStorage:", e);
       }
     }
 
@@ -1390,7 +1235,7 @@ function showApp() {
       try {
         localStorage.removeItem(STORAGE_KEY);
       } catch (e) {
-        console.error('Fehler beim Löschen aus localStorage:', e);
+        console.error("Fehler beim Löschen aus localStorage:", e);
       }
     }
 
@@ -1399,105 +1244,126 @@ function showApp() {
         const json = localStorage.getItem(STORAGE_KEY);
         if (!json) return;
         const arr = JSON.parse(json);
-        if (Array.isArray(arr)) {
-          arr.forEach(m => {
-            if (m && typeof m.timestampRaw === 'string' &&
-                typeof m.timestamp === 'string' &&
-                typeof m.sys === 'number' &&
-                typeof m.dia === 'number') {
-              measurements.push(m);
-            }
-          });
-        }
-      } catch (e) {
-        console.error('Fehler beim Laden aus localStorage:', e);
-      }
-    }
-
-    // ==========================
-    // Sync-Code local
-    // ==========================
-
-    function loadSyncCodeFromLocal() {
-      try {
-        const stored = localStorage.getItem(SYNC_CODE_KEY);
-        if (stored) {
-          syncCode = stored;
-          if (syncCodeInput) {
-            syncCodeInput.value = syncCode;
+        if (!Array.isArray(arr)) return;
+        measurements.length = 0;
+        arr.forEach((m) => {
+          if (
+            m &&
+            typeof m.timestampRaw === "string" &&
+            typeof m.timestamp === "string" &&
+            typeof m.sys === "number" &&
+            typeof m.dia === "number"
+          ) {
+            measurements.push(m);
           }
-          if (mSyncCodeInput) {
-            mSyncCodeInput.value = syncCode;
-          }
-        }
+        });
       } catch (e) {
-        console.error('Fehler beim Laden des Sync-Codes:', e);
+        console.error("Fehler beim Laden aus localStorage:", e);
       }
     }
 
-    function saveSyncCodeToLocal() {
-      try {
-        if (syncCode) {
-          localStorage.setItem(SYNC_CODE_KEY, syncCode);
-        } else {
-          localStorage.removeItem(SYNC_CODE_KEY);
-        }
-      } catch (e) {
-        console.error('Fehler beim Speichern des Sync-Codes:', e);
-      }
-    }
-
-    function handleSyncCodeSave(val) {
-      const trimmed = (val || '').trim();
-
-      if (!trimmed) {
-        if (!confirm('Leerer Sync-Code – Cloud-Synchronisation wird deaktiviert. Fortfahren?')) {
-          return;
-        }
-        syncCode = null;
-        saveSyncCodeToLocal();
-        if (syncCodeInput)  syncCodeInput.value = '';
-        if (mSyncCodeInput) mSyncCodeInput.value = '';
-        setCloudStatus('Cloud-Sync: inaktiv');
-        alert('Sync-Code entfernt. Daten werden nur lokal gespeichert.');
+    // Cloud (pro User)
+    async function loadFromCloud() {
+      const user = auth.currentUser;
+      if (!user) {
+        setCloudStatus("Nicht eingeloggt – keine Cloud-Daten.");
         return;
       }
 
-      syncCode = trimmed;
-      saveSyncCodeToLocal();
+      try {
+        const docRef = db.collection("users").doc(user.uid);
+        const snap = await docRef.get();
+        if (!snap.exists) {
+          setCloudStatus("Cloud-Sync aktiv – noch keine Daten in der Cloud.");
+          return;
+        }
+        const data = snap.data();
+        if (!data || !Array.isArray(data.measurements)) {
+          setCloudStatus("Cloud-Sync aktiv – ungültige Daten in der Cloud.");
+          return;
+        }
 
-      if (syncCodeInput)  syncCodeInput.value = syncCode;
-      if (mSyncCodeInput) mSyncCodeInput.value = syncCode;
-
-      setCloudStatus('Cloud-Sync aktiv (Code: ' + syncCode + ') – lade Daten...');
-      alert('Sync-Code gespeichert. Daten werden jetzt mit der Cloud synchronisiert.');
-      loadFromCloud();
+        measurements.length = 0;
+        data.measurements.forEach((m) => {
+          if (
+            m &&
+            typeof m.timestampRaw === "string" &&
+            typeof m.timestamp === "string" &&
+            typeof m.sys === "number" &&
+            typeof m.dia === "number"
+          ) {
+            measurements.push(m);
+          }
+        });
+        measurements.sort((a, b) =>
+          a.timestampRaw.localeCompare(b.timestampRaw)
+        );
+        renderAll();
+        saveToLocalStorage();
+        setCloudStatus(
+          "Cloud-Daten geladen: " + new Date().toLocaleString()
+        );
+      } catch (e) {
+        console.error("Fehler beim Laden aus der Cloud:", e);
+        setCloudStatus(
+          "Cloud-Fehler beim Laden: " + (e.message || String(e))
+        );
+      }
     }
 
-    // ==========================
-    // File System Access API
-    // ==========================
+    async function saveToCloud() {
+      const user = auth.currentUser;
+      if (!user) {
+        setCloudStatus("Nicht eingeloggt – keine Cloud-Speicherung.");
+        return;
+      }
 
+      try {
+        const docRef = db.collection("users").doc(user.uid);
+        await docRef.set({ measurements });
+        setCloudStatus(
+          "Zuletzt in Cloud gespeichert: " + new Date().toLocaleString()
+        );
+      } catch (e) {
+        console.error("Fehler beim Speichern in der Cloud:", e);
+        setCloudStatus(
+          "Cloud-Fehler beim Speichern: " + (e.message || String(e))
+        );
+      }
+    }
+
+    function persistData() {
+      saveToLocalStorage();
+      if (fileHandle) {
+        saveToJsonFile();
+      }
+      saveToCloud();
+    }
+
+    // File-System-API (optional)
     async function connectJsonFile() {
       if (!window.showSaveFilePicker) {
-        alert('Dein Browser unterstützt diese Dateifunktion nicht. Bitte nutze Chrome oder Edge in einer sicheren Umgebung (https/localhost).');
+        alert(
+          "Dein Browser unterstützt diese Dateifunktion nicht. Bitte nutze Chrome oder Edge."
+        );
         return;
       }
 
       try {
         const handle = await window.showSaveFilePicker({
-          suggestedName: 'blutdruck.json',
+          suggestedName: "blutdruck.json",
           types: [
             {
-              description: 'JSON-Datei',
-              accept: { 'application/json': ['.json'] }
-            }
-          ]
+              description: "JSON-Datei",
+              accept: { "application/json": [".json"] },
+            },
+          ],
         });
 
         fileHandle = handle;
         if (fileStatusSpan) {
-          fileStatusSpan.textContent = 'Verbunden mit: ' + (handle.name || 'blutdruck.json');
+          fileStatusSpan.textContent =
+            "Verbunden mit: " + (handle.name || "blutdruck.json");
         }
 
         try {
@@ -1507,27 +1373,32 @@ function showApp() {
             const arr = JSON.parse(text);
             if (Array.isArray(arr)) {
               measurements.length = 0;
-              arr.forEach(m => {
-                if (m && typeof m.timestampRaw === 'string' &&
-                    typeof m.timestamp === 'string' &&
-                    typeof m.sys === 'number' &&
-                    typeof m.dia === 'number') {
+              arr.forEach((m) => {
+                if (
+                  m &&
+                  typeof m.timestampRaw === "string" &&
+                  typeof m.timestamp === "string" &&
+                  typeof m.sys === "number" &&
+                  typeof m.dia === "number"
+                ) {
                   measurements.push(m);
                 }
               });
-              measurements.sort((a, b) => a.timestampRaw.localeCompare(b.timestampRaw));
+              measurements.sort((a, b) =>
+                a.timestampRaw.localeCompare(b.timestampRaw)
+              );
               renderAll();
               saveToLocalStorage();
             }
           }
         } catch (e) {
-          console.error('Fehler beim Lesen aus der JSON-Datei:', e);
+          console.error("Fehler beim Lesen aus JSON-Datei:", e);
         }
 
         persistData();
       } catch (e) {
-        if (e.name === 'AbortError') return;
-        console.error('Fehler beim Auswählen/Erstellen der JSON-Datei:', e);
+        if (e.name === "AbortError") return;
+        console.error("Fehler beim Dateiauswählen:", e);
       }
     }
 
@@ -1538,220 +1409,53 @@ function showApp() {
         await writable.write(JSON.stringify(measurements, null, 2));
         await writable.close();
       } catch (e) {
-        console.error('Fehler beim Schreiben in die JSON-Datei:', e);
+        console.error("Fehler beim Schreiben in JSON-Datei:", e);
       }
-    }
-
-    // ==========================
-    // Cloud-Speicher (Firestore)
-    // ==========================
-
-    async function loadFromCloud() {
-  const user = auth.currentUser;
-  if (!user) {
-    console.log("Kein Benutzer eingeloggt, überspringe Cloud-Load.");
-    setCloudStatus("Nicht eingeloggt – keine Cloud-Daten.");
-    return;
-  }
-
-  try {
-    const docRef = db.collection("users").doc(user.uid);
-    const docSnap = await docRef.get();
-
-    if (!docSnap.exists) {
-      console.log("Noch keine Cloud-Daten für diesen Benutzer.");
-      setCloudStatus("Cloud-Sync aktiv – noch keine Daten in der Cloud.");
-      return;
-    }
-
-    const data = docSnap.data();
-    if (!data || !Array.isArray(data.measurements)) {
-      setCloudStatus("Cloud-Sync aktiv – ungültige Cloud-Daten.");
-      return;
-    }
-
-    measurements.length = 0;
-    data.measurements.forEach((m) => {
-      if (
-        m &&
-        typeof m.timestampRaw === "string" &&
-        typeof m.timestamp === "string" &&
-        typeof m.sys === "number" &&
-        typeof m.dia === "number"
-      ) {
-        measurements.push(m);
-      }
-    });
-
-    measurements.sort((a, b) => a.timestampRaw.localeCompare(b.timestampRaw));
-    renderAll();
-    saveToLocalStorage();
-
-    setCloudStatus("Cloud-Daten geladen: " + new Date().toLocaleString());
-    console.log("Daten aus Cloud geladen.");
-  } catch (e) {
-    console.error("Fehler beim Laden aus der Cloud:", e);
-    setCloudStatus("Cloud-Fehler beim Laden: " + (e.message || e));
-    alert("Fehler beim Laden aus der Cloud. Details in der Konsole.");
-  }
-}
-
-
-      try {
-        const docRef = db.collection('measurements').doc(syncCode);
-        const docSnap = await docRef.get();
-        if (!docSnap.exists) {
-          console.log('Noch keine Cloud-Daten für diesen Sync-Code.');
-          setCloudStatus('Cloud-Sync aktiv (Code: ' + syncCode + ') – noch keine Cloud-Daten vorhanden.');
-          return;
-        }
-
-        const data = docSnap.data();
-        if (!data || !Array.isArray(data.measurements)) {
-          setCloudStatus('Cloud-Sync aktiv (Code: ' + syncCode + ') – ungültige Cloud-Daten.');
-          return;
-        }
-
-        measurements.length = 0;
-        data.measurements.forEach(m => {
-          if (m &&
-              typeof m.timestampRaw === 'string' &&
-              typeof m.timestamp === 'string' &&
-              typeof m.sys === 'number' &&
-              typeof m.dia === 'number') {
-            measurements.push(m);
-          }
-        });
-
-        measurements.sort((a, b) => a.timestampRaw.localeCompare(b.timestampRaw));
-        renderAll();
-        saveToLocalStorage();
-        setCloudStatus('Cloud-Daten geladen: ' + new Date().toLocaleString());
-        console.log('Daten aus Cloud geladen.');
-      } catch (e) {
-        console.error('Fehler beim Laden aus der Cloud:', e);
-        setCloudStatus('Cloud-Fehler beim Laden: ' + (e.message || e));
-        alert('Fehler beim Laden aus der Cloud. Details in der Konsole.');
-      }
-    }
-
-    async function saveToCloud() {
-  const user = auth.currentUser;
-  if (!user) {
-    // Nicht eingeloggt → kein Cloud-Save
-    setCloudStatus("Nicht eingeloggt – keine Cloud-Speicherung.");
-    return;
-  }
-
-  try {
-    const docRef = db.collection("users").doc(user.uid);
-    await docRef.set({
-      measurements: measurements
-    });
-
-    const ts = new Date().toLocaleString();
-    setCloudStatus("Zuletzt in Cloud gespeichert: " + ts);
-    console.log("Daten in Cloud gespeichert.");
-  } catch (e) {
-    console.error("Fehler beim Speichern in der Cloud:", e);
-    setCloudStatus("Cloud-Fehler beim Speichern: " + (e.message || e));
-  }
-}
-
-
-      try {
-        const docRef = db.collection('measurements').doc(syncCode);
-        await docRef.set({
-          measurements: measurements
-        });
-        const ts = new Date().toLocaleString();
-        setCloudStatus('Zuletzt in Cloud gespeichert: ' + ts + ' (Code: ' + syncCode + ')');
-        console.log('Daten in Cloud gespeichert.');
-      } catch (e) {
-        console.error('Fehler beim Speichern in der Cloud:', e);
-        setCloudStatus('Cloud-Fehler beim Speichern: ' + (e.message || e));
-      }
-    }
-
-    // ==========================
-    // Persistenz
-    // ==========================
-
-    function persistData() {
-      saveToLocalStorage();
-      if (fileHandle) {
-        saveToJsonFile();
-      }
-      saveToCloud();
     }
 
     if (connectFileBtn) {
-      connectFileBtn.addEventListener('click', () => {
-        connectJsonFile();
-      });
+      connectFileBtn.addEventListener("click", connectJsonFile);
     }
-
-    if (saveSyncCodeBtn) {
-      saveSyncCodeBtn.addEventListener('click', () => {
-        const val = syncCodeInput ? syncCodeInput.value : '';
-        handleSyncCodeSave(val);
-      });
-    }
-
-    if (mSaveSyncCodeBtn) {
-      mSaveSyncCodeBtn.addEventListener('click', () => {
-        const val = mSyncCodeInput ? mSyncCodeInput.value : '';
-        handleSyncCodeSave(val);
-      });
-    }
-
-    // ==========================
-    // Hilfsfunktion: Messung anlegen/ändern
-    // ==========================
 
     function upsertMeasurement(tsValue, sys, dia, index = null) {
-      const tsDisplay = tsValue.replace('T', ' ');
+      const tsDisplay = tsValue.replace("T", " ");
+      const entry = {
+        timestampRaw: tsValue,
+        timestamp: tsDisplay,
+        sys,
+        dia,
+      };
       if (index === null) {
-        measurements.push({
-          timestampRaw: tsValue,
-          timestamp: tsDisplay,
-          sys,
-          dia
-        });
+        measurements.push(entry);
       } else {
-        measurements[index] = {
-          timestampRaw: tsValue,
-          timestamp: tsDisplay,
-          sys,
-          dia
-        };
+        measurements[index] = entry;
       }
-      measurements.sort((a, b) => a.timestampRaw.localeCompare(b.timestampRaw));
+      measurements.sort((a, b) =>
+        a.timestampRaw.localeCompare(b.timestampRaw)
+      );
     }
 
-    // ==========================
-    // Formular / Eingabe Desktop
-    // ==========================
-
     if (addUpdateBtn) {
-      addUpdateBtn.addEventListener('click', () => {
+      addUpdateBtn.addEventListener("click", () => {
         const tsValue = timestampInput.value;
         const sys = parseInt(sysInput.value, 10);
         const dia = parseInt(diaInput.value, 10);
 
         if (!tsValue) {
-          alert('Bitte einen Zeitstempel eingeben.');
+          alert("Bitte einen Zeitstempel eingeben.");
           timestampInput.focus();
           return;
         }
         if (isNaN(sys) || isNaN(dia)) {
-          alert('Bitte sowohl systolischen als auch diastolischen Wert eingeben.');
-          if (isNaN(sys)) sysInput.focus(); else diaInput.focus();
+          alert(
+            "Bitte sowohl systolischen als auch diastolischen Wert eingeben."
+          );
+          if (isNaN(sys)) sysInput.focus();
+          else diaInput.focus();
           return;
         }
 
         upsertMeasurement(tsValue, sys, dia, editIndex);
-
         resetForm();
         renderAll();
         persistData();
@@ -1759,28 +1463,26 @@ function showApp() {
     }
 
     if (cancelEditBtn) {
-      cancelEditBtn.addEventListener('click', () => {
-        resetForm();
-      });
+      cancelEditBtn.addEventListener("click", resetForm);
     }
 
     function resetForm() {
       setNowToTimestamp();
-      if (sysInput) sysInput.value = '';
-      if (diaInput) diaInput.value = '';
+      if (sysInput) sysInput.value = "";
+      if (diaInput) diaInput.value = "";
       editIndex = null;
-      if (addUpdateBtn) addUpdateBtn.textContent = 'Messung hinzufügen';
-      if (cancelEditBtn) cancelEditBtn.style.display = 'none';
+      if (addUpdateBtn) addUpdateBtn.textContent = "Messung hinzufügen";
+      if (cancelEditBtn) cancelEditBtn.style.display = "none";
       if (timestampInput) timestampInput.focus();
     }
 
-    // ==========================
-    // Alle Daten löschen
-    // ==========================
-
     if (clearAllBtn) {
-      clearAllBtn.addEventListener('click', async () => {
-        if (!confirm('Wirklich alle Messungen löschen? Diese Aktion kann nicht rückgängig gemacht werden.')) {
+      clearAllBtn.addEventListener("click", async () => {
+        if (
+          !confirm(
+            "Wirklich alle Messungen löschen? Diese Aktion kann nicht rückgängig gemacht werden."
+          )
+        ) {
           return;
         }
         measurements.length = 0;
@@ -1795,66 +1497,60 @@ function showApp() {
       });
     }
 
-    // ==========================
-    // Details-Tabelle Desktop
-    // ==========================
-
     function renderDetailsTable() {
       if (!dataTableBody) return;
-      dataTableBody.innerHTML = '';
+      dataTableBody.innerHTML = "";
 
       if (measurements.length === 0) {
-        const tr = document.createElement('tr');
-        const td = document.createElement('td');
+        const tr = document.createElement("tr");
+        const td = document.createElement("td");
         td.colSpan = 5;
-        td.className = 'table-muted';
-        td.textContent = 'Noch keine Messungen erfasst.';
+        td.className = "table-muted";
+        td.textContent = "Noch keine Messungen erfasst.";
         tr.appendChild(td);
         dataTableBody.appendChild(tr);
         return;
       }
 
       const n = measurements.length;
-      const sorted = measurements.slice().sort((a, b) =>
-        b.timestampRaw.localeCompare(a.timestampRaw)
-      );
+      const sorted = measurements
+        .slice()
+        .sort((a, b) => b.timestampRaw.localeCompare(a.timestampRaw));
 
       sorted.forEach((m, idx) => {
-        const tr = document.createElement('tr');
+        const tr = document.createElement("tr");
         const isHigh = m.sys >= 140 || m.dia >= 90;
-        if (isHigh) {
-          tr.classList.add('row-high');
-        }
+        if (isHigh) tr.classList.add("row-high");
 
         const displayIndex = n - idx;
 
-        const tdIndex = document.createElement('td');
+        const tdIndex = document.createElement("td");
         tdIndex.textContent = displayIndex;
 
-        const tdTime = document.createElement('td');
+        const tdTime = document.createElement("td");
         tdTime.textContent = m.timestamp;
 
-        const tdSys = document.createElement('td');
+        const tdSys = document.createElement("td");
         tdSys.textContent = m.sys;
-        if (isHigh) tdSys.classList.add('value-high');
+        if (isHigh) tdSys.classList.add("value-high");
 
-        const tdDia = document.createElement('td');
+        const tdDia = document.createElement("td");
         tdDia.textContent = m.dia;
-        if (isHigh) tdDia.classList.add('value-high');
+        if (isHigh) tdDia.classList.add("value-high");
 
-        const tdActions = document.createElement('td');
-        const btnRow = document.createElement('div');
-        btnRow.className = 'btn-row';
+        const tdActions = document.createElement("td");
+        const btnRow = document.createElement("div");
+        btnRow.className = "btn-row";
 
-        const editButton = document.createElement('button');
-        editButton.textContent = 'Bearbeiten';
-        editButton.className = 'btn btn-outline btn-sm';
+        const editButton = document.createElement("button");
+        editButton.textContent = "Bearbeiten";
+        editButton.className = "btn btn-outline btn-sm";
         const originalIndex = measurements.indexOf(m);
         editButton.onclick = () => startEdit(originalIndex);
 
-        const deleteButton = document.createElement('button');
-        deleteButton.textContent = 'Löschen';
-        deleteButton.className = 'btn btn-danger btn-sm';
+        const deleteButton = document.createElement("button");
+        deleteButton.textContent = "Löschen";
+        deleteButton.className = "btn btn-danger btn-sm";
         deleteButton.onclick = () => deleteMeasurement(originalIndex);
 
         btnRow.appendChild(editButton);
@@ -1873,18 +1569,18 @@ function showApp() {
     function startEdit(index) {
       const m = measurements[index];
       if (!m) return;
-      if (timestampInput) timestampInput.value = m.timestampRaw;
-      if (sysInput) sysInput.value = m.sys;
-      if (diaInput) diaInput.value = m.dia;
+      timestampInput.value = m.timestampRaw;
+      sysInput.value = m.sys;
+      diaInput.value = m.dia;
       editIndex = index;
-      if (addUpdateBtn) addUpdateBtn.textContent = 'Messung aktualisieren';
-      if (cancelEditBtn) cancelEditBtn.style.display = 'inline-block';
-      if (timestampInput) timestampInput.focus();
-      setActiveView('overview');
+      if (addUpdateBtn) addUpdateBtn.textContent = "Messung aktualisieren";
+      if (cancelEditBtn) cancelEditBtn.style.display = "inline-block";
+      setActiveView("overview");
+      timestampInput.focus();
     }
 
     function deleteMeasurement(index) {
-      if (!confirm('Diese Messung wirklich löschen?')) return;
+      if (!confirm("Diese Messung wirklich löschen?")) return;
       measurements.splice(index, 1);
       if (editIndex === index) {
         resetForm();
@@ -1895,41 +1591,38 @@ function showApp() {
       persistData();
     }
 
-    // ==========================
-    // Übersicht Desktop
-    // ==========================
-
     function renderOverview() {
       if (!last5TableBody) return;
-      last5TableBody.innerHTML = '';
+      last5TableBody.innerHTML = "";
+
       if (measurements.length === 0) {
-        const tr = document.createElement('tr');
-        const td = document.createElement('td');
+        const tr = document.createElement("tr");
+        const td = document.createElement("td");
         td.colSpan = 4;
-        td.className = 'table-muted';
-        td.textContent = 'Noch keine Messungen erfasst.';
+        td.className = "table-muted";
+        td.textContent = "Noch keine Messungen erfasst.";
         tr.appendChild(td);
         last5TableBody.appendChild(tr);
       } else {
         const lastFive = measurements.slice(-5).reverse();
         lastFive.forEach((m, idx) => {
-          const tr = document.createElement('tr');
+          const tr = document.createElement("tr");
           const isHigh = m.sys >= 140 || m.dia >= 90;
-          if (isHigh) tr.classList.add('row-high');
+          if (isHigh) tr.classList.add("row-high");
 
-          const tdIndex = document.createElement('td');
+          const tdIndex = document.createElement("td");
           tdIndex.textContent = measurements.length - idx;
 
-          const tdTime = document.createElement('td');
+          const tdTime = document.createElement("td");
           tdTime.textContent = m.timestamp;
 
-          const tdSys = document.createElement('td');
+          const tdSys = document.createElement("td");
           tdSys.textContent = m.sys;
-          if (isHigh) tdSys.classList.add('value-high');
+          if (isHigh) tdSys.classList.add("value-high");
 
-          const tdDia = document.createElement('td');
+          const tdDia = document.createElement("td");
           tdDia.textContent = m.dia;
-          if (isHigh) tdDia.classList.add('value-high');
+          if (isHigh) tdDia.classList.add("value-high");
 
           tr.appendChild(tdIndex);
           tr.appendChild(tdTime);
@@ -1941,11 +1634,12 @@ function showApp() {
 
       const n = measurements.length;
       if (totalCountSpan) totalCountSpan.textContent = n;
-      if (totalCountPill) totalCountPill.textContent = `${n} Messung${n === 1 ? '' : 'en'}`;
+      if (totalCountPill)
+        totalCountPill.textContent = `${n} Messung${n === 1 ? "" : "en"}`;
 
       if (n === 0) {
-        if (avgSysSpan) avgSysSpan.textContent = '–';
-        if (avgDiaSpan) avgDiaSpan.textContent = '–';
+        if (avgSysSpan) avgSysSpan.textContent = "–";
+        if (avgDiaSpan) avgDiaSpan.textContent = "–";
       } else {
         const sumSys = measurements.reduce((acc, m) => acc + m.sys, 0);
         const sumDia = measurements.reduce((acc, m) => acc + m.dia, 0);
@@ -1954,17 +1648,13 @@ function showApp() {
       }
     }
 
-    // ==========================
-    // Trend-Berechnung & Diagramm
-    // ==========================
-
     function calcTrend(values) {
       const n = values.length;
-      if (n < 2) {
-        return values.slice();
-      }
-
-      let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
+      if (n < 2) return values.slice();
+      let sumX = 0,
+        sumY = 0,
+        sumXY = 0,
+        sumXX = 0;
       for (let i = 0; i < n; i++) {
         const x = i;
         const y = values[i];
@@ -1974,7 +1664,8 @@ function showApp() {
         sumXX += x * x;
       }
       const denominator = n * sumXX - sumX * sumX;
-      let a = 0, b = 0;
+      let a = 0,
+        b = 0;
       if (denominator !== 0) {
         a = (n * sumXY - sumX * sumY) / denominator;
         b = (sumY - a * sumX) / n;
@@ -1982,62 +1673,58 @@ function showApp() {
         a = 0;
         b = sumY / n;
       }
-
       const trend = [];
-      for (let i = 0; i < n; i++) {
-        trend.push(a * i + b);
-      }
+      for (let i = 0; i < n; i++) trend.push(a * i + b);
       return trend;
     }
 
     function updateChart() {
-      // WICHTIG: Kein Diagramm auf Mobile
       if (isMobile) return;
       if (!chartCanvas) return;
 
-      const labels    = measurements.map(m => m.timestamp);
-      const sysValues = measurements.map(m => m.sys);
-      const diaValues = measurements.map(m => m.dia);
+      const labels = measurements.map((m) => m.timestamp);
+      const sysValues = measurements.map((m) => m.sys);
+      const diaValues = measurements.map((m) => m.dia);
 
       const sysTrend = calcTrend(sysValues);
       const diaTrend = calcTrend(diaValues);
 
       const data = {
-        labels: labels,
+        labels,
         datasets: [
           {
-            label: 'Systolisch',
+            label: "Systolisch",
             data: sysValues,
             tension: 0.2,
             fill: false,
             borderWidth: 2,
-            pointRadius: 4
+            pointRadius: 4,
           },
           {
-            label: 'Diastolisch',
+            label: "Diastolisch",
             data: diaValues,
             tension: 0.2,
             fill: false,
             borderWidth: 2,
-            pointRadius: 4
+            pointRadius: 4,
           },
           {
-            label: 'Trend Systolisch',
+            label: "Trend Systolisch",
             data: sysTrend,
             borderWidth: 1.5,
             borderDash: [5, 5],
             pointRadius: 0,
-            fill: false
+            fill: false,
           },
           {
-            label: 'Trend Diastolisch',
+            label: "Trend Diastolisch",
             data: diaTrend,
             borderWidth: 1.5,
             borderDash: [5, 5],
             pointRadius: 0,
-            fill: false
-          }
-        ]
+            fill: false,
+          },
+        ],
       };
 
       const options = {
@@ -2045,27 +1732,14 @@ function showApp() {
         maintainAspectRatio: false,
         scales: {
           x: {
-            title: {
-              display: true,
-              text: 'Zeitstempel'
-            },
-            ticks: {
-              maxRotation: 270,
-              minRotation: 270
-            }
+            title: { display: true, text: "Zeitstempel" },
+            ticks: { maxRotation: 270, minRotation: 270 },
           },
           y: {
-            title: {
-              display: true,
-              text: 'Blutdruck (mmHg)'
-            }
-          }
+            title: { display: true, text: "Blutdruck (mmHg)" },
+          },
         },
-        plugins: {
-          legend: {
-            position: 'top'
-          }
-        }
+        plugins: { legend: { position: "top" } },
       };
 
       if (bpChart) {
@@ -2074,21 +1748,17 @@ function showApp() {
         bpChart.update();
       } else {
         bpChart = new Chart(chartCanvas, {
-          type: 'line',
-          data: data,
-          options: options
+          type: "line",
+          data,
+          options,
         });
       }
     }
 
-    // ==========================
-    // Export (JSON / CSV)
-    // ==========================
-
     function downloadText(filename, text) {
-      const blob = new Blob([text], { type: 'text/plain;charset=utf-8;' });
+      const blob = new Blob([text], { type: "text/plain;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
       a.download = filename;
       document.body.appendChild(a);
@@ -2098,50 +1768,41 @@ function showApp() {
     }
 
     if (exportJsonBtn) {
-      exportJsonBtn.addEventListener('click', () => {
+      exportJsonBtn.addEventListener("click", () => {
         if (measurements.length === 0) {
-          alert('Keine Daten zum Exportieren.');
+          alert("Keine Daten zum Exportieren.");
           return;
         }
         const json = JSON.stringify(measurements, null, 2);
-        downloadText('blutdruck.json', json);
+        downloadText("blutdruck.json", json);
       });
     }
 
     if (exportCsvBtn) {
-      exportCsvBtn.addEventListener('click', () => {
+      exportCsvBtn.addEventListener("click", () => {
         if (measurements.length === 0) {
-          alert('Keine Daten zum Exportieren.');
+          alert("Keine Daten zum Exportieren.");
           return;
         }
-        const header = ['timestamp', 'systolisch', 'diastolisch'];
-        const rows = measurements.map(m => [
-          m.timestamp,
-          m.sys,
-          m.dia
-        ]);
-
-        let csv = header.join(';') + '\n';
-        rows.forEach(r => {
-          csv += r.join(';') + '\n';
+        const header = ["timestamp", "systolisch", "diastolisch"];
+        const rows = measurements.map((m) => [m.timestamp, m.sys, m.dia]);
+        let csv = header.join(";") + "\n";
+        rows.forEach((r) => {
+          csv += r.join(";") + "\n";
         });
-
-        downloadText('blutdruck.csv', csv);
+        downloadText("blutdruck.csv", csv);
       });
     }
 
-    // ==========================
-    // Timestamp-Parser & Import
-    // ==========================
-
     function parseExcelTimestamp(str) {
-      if (typeof str !== 'string') return null;
+      if (typeof str !== "string") return null;
       str = str.trim();
       if (!str) return null;
 
-      let candidate = str.replace('T', ' ');
-
-      let isoMatch = candidate.match(/^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2})$/);
+      let candidate = str.replace("T", " ");
+      let isoMatch = candidate.match(
+        /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2})$/
+      );
       if (isoMatch) {
         const [, yyyy, mm, dd, hh, mi] = isoMatch;
         const raw = `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
@@ -2149,31 +1810,25 @@ function showApp() {
         return { raw, display };
       }
 
-      const parts = candidate.split(' ');
+      const parts = candidate.split(" ");
       if (parts.length < 2) return null;
-
       const datePart = parts[0];
       const timePart = parts[1];
 
-      const dParts = datePart.split('.');
+      const dParts = datePart.split(".");
       if (dParts.length !== 3) return null;
-
       let [dd, mm, yy] = dParts;
-      dd = dd.padStart(2, '0');
-      mm = mm.padStart(2, '0');
+      dd = dd.padStart(2, "0");
+      mm = mm.padStart(2, "0");
 
-      if (yy.length === 2) {
-        yy = '20' + yy;
-      } else if (yy.length === 4) {
-      } else {
-        return null;
-      }
+      if (yy.length === 2) yy = "20" + yy;
+      else if (yy.length !== 4) return null;
 
-      const tParts = timePart.split(':');
+      const tParts = timePart.split(":");
       if (tParts.length < 2) return null;
       let [hh, mi] = tParts;
-      hh = hh.padStart(2, '0');
-      mi = mi.padStart(2, '0');
+      hh = hh.padStart(2, "0");
+      mi = mi.padStart(2, "0");
 
       const raw = `${yy}-${mm}-${dd}T${hh}:${mi}`;
       const display = `${yy}-${mm}-${dd} ${hh}:${mi}`;
@@ -2181,42 +1836,38 @@ function showApp() {
     }
 
     if (importExcelBtn && excelFileInput) {
-      importExcelBtn.addEventListener('click', () => {
-        excelFileInput.value = '';
+      importExcelBtn.addEventListener("click", () => {
+        excelFileInput.value = "";
         excelFileInput.click();
       });
 
-      excelFileInput.addEventListener('change', handleExcelImport);
+      excelFileInput.addEventListener("change", handleExcelImport);
     }
 
     function handleExcelImport(evt) {
       const file = evt.target.files[0];
       if (!file) return;
-
       const reader = new FileReader();
-      reader.onload = function(e) {
+      reader.onload = function (e) {
         const data = e.target.result;
-        const workbook = XLSX.read(data, { type: 'binary' });
+        const workbook = XLSX.read(data, { type: "binary" });
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
-
-        const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: false });
+        const rows = XLSX.utils.sheet_to_json(worksheet, {
+          header: 1,
+          raw: false,
+        });
 
         let imported = 0;
-
         for (let i = 1; i < rows.length; i++) {
           const row = rows[i];
           if (!row || row.length < 3) continue;
-
-          const tsStr  = row[0];
+          const tsStr = row[0];
           const sysStr = row[1];
           const diaStr = row[2];
-
           if (!tsStr || !sysStr || !diaStr) continue;
-
           const parsedTs = parseExcelTimestamp(tsStr);
           if (!parsedTs) continue;
-
           const sys = parseInt(sysStr, 10);
           const dia = parseInt(diaStr, 10);
           if (isNaN(sys) || isNaN(dia)) continue;
@@ -2225,17 +1876,19 @@ function showApp() {
             timestampRaw: parsedTs.raw,
             timestamp: parsedTs.display,
             sys,
-            dia
+            dia,
           });
           imported++;
         }
 
         if (imported === 0) {
-          alert('Es wurden keine gültigen Messungen aus der Excel-Datei gelesen.');
+          alert("Es wurden keine gültigen Messungen aus der Excel-Datei gelesen.");
           return;
         }
 
-        measurements.sort((a, b) => a.timestampRaw.localeCompare(b.timestampRaw));
+        measurements.sort((a, b) =>
+          a.timestampRaw.localeCompare(b.timestampRaw)
+        );
         renderAll();
         persistData();
       };
@@ -2244,42 +1897,40 @@ function showApp() {
     }
 
     if (importCsvBtn && csvFileInput) {
-      importCsvBtn.addEventListener('click', () => {
-        csvFileInput.value = '';
+      importCsvBtn.addEventListener("click", () => {
+        csvFileInput.value = "";
         csvFileInput.click();
       });
-
-      csvFileInput.addEventListener('change', handleCsvImport);
+      csvFileInput.addEventListener("change", handleCsvImport);
     }
 
     function handleCsvImport(evt) {
       const file = evt.target.files[0];
       if (!file) return;
-
       const reader = new FileReader();
-      reader.onload = function(e) {
+      reader.onload = function (e) {
         const text = e.target.result;
-        const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
+        const lines = text
+          .split(/\r?\n/)
+          .filter((line) => line.trim().length > 0);
         if (lines.length === 0) {
-          alert('Die CSV-Datei ist leer.');
+          alert("Die CSV-Datei ist leer.");
           return;
         }
 
         const dataLines = lines;
         const sample = dataLines[0];
-        const delimiter = sample.indexOf(';') !== -1 ? ';' : ',';
+        const delimiter = sample.indexOf(";") !== -1 ? ";" : ",";
 
         let imported = 0;
-
         for (let i = 0; i < dataLines.length; i++) {
           const line = dataLines[i];
           const parts = line.split(delimiter);
           if (parts.length < 3) continue;
 
-          const tsStr  = parts[0].trim();
+          const tsStr = parts[0].trim();
           const sysStr = parts[1].trim();
           const diaStr = parts[2].trim();
-
           if (!tsStr || !sysStr || !diaStr) continue;
 
           const parsedTs = parseExcelTimestamp(tsStr);
@@ -2293,117 +1944,114 @@ function showApp() {
             timestampRaw: parsedTs.raw,
             timestamp: parsedTs.display,
             sys,
-            dia
+            dia,
           });
           imported++;
         }
 
         if (imported === 0) {
-          alert('Es wurden keine gültigen Messungen aus der CSV-Datei gelesen.');
+          alert("Es wurden keine gültigen Messungen aus der CSV-Datei gelesen.");
           return;
         }
 
-        measurements.sort((a, b) => a.timestampRaw.localeCompare(b.timestampRaw));
+        measurements.sort((a, b) =>
+          a.timestampRaw.localeCompare(b.timestampRaw)
+        );
         renderAll();
         persistData();
       };
 
-      reader.readAsText(file, 'utf-8');
+      reader.readAsText(file, "utf-8");
     }
-
-    // ==========================
-    // MOBILE-LOGIK: Tabs & Liste
-    // ==========================
 
     function setMobileView(view) {
       if (!mobileTabInput || !mobileTabList || !mobileViewInput || !mobileViewList) return;
-
-      if (view === 'input') {
-        mobileTabInput.classList.add('active');
-        mobileTabList.classList.remove('active');
-        mobileViewInput.classList.add('active');
-        mobileViewList.classList.remove('active');
+      if (view === "input") {
+        mobileTabInput.classList.add("active");
+        mobileTabList.classList.remove("active");
+        mobileViewInput.classList.add("active");
+        mobileViewList.classList.remove("active");
       } else {
-        mobileTabInput.classList.remove('active');
-        mobileTabList.classList.add('active');
-        mobileViewInput.classList.remove('active');
-        mobileViewList.classList.add('active');
+        mobileTabInput.classList.remove("active");
+        mobileTabList.classList.add("active");
+        mobileViewInput.classList.remove("active");
+        mobileViewList.classList.add("active");
       }
     }
 
     if (mobileTabInput && mobileTabList) {
-      mobileTabInput.addEventListener('click', () => setMobileView('input'));
-      mobileTabList.addEventListener('click', () => setMobileView('list'));
+      mobileTabInput.addEventListener("click", () => setMobileView("input"));
+      mobileTabList.addEventListener("click", () => setMobileView("list"));
     }
 
     if (mAddBtn) {
-      mAddBtn.addEventListener('click', () => {
+      mAddBtn.addEventListener("click", () => {
         const tsValue = mTimestampInput.value;
         const sys = parseInt(mSysInput.value, 10);
         const dia = parseInt(mDiaInput.value, 10);
 
         if (!tsValue) {
-          alert('Bitte einen Zeitstempel eingeben.');
+          alert("Bitte einen Zeitstempel eingeben.");
           mTimestampInput.focus();
           return;
         }
         if (isNaN(sys) || isNaN(dia)) {
-          alert('Bitte sowohl systolischen als auch diastolischen Wert eingeben.');
-          if (isNaN(sys)) mSysInput.focus(); else mDiaInput.focus();
+          alert(
+            "Bitte sowohl systolischen als auch diastolischen Wert eingeben."
+          );
+          if (isNaN(sys)) mSysInput.focus();
+          else mDiaInput.focus();
           return;
         }
 
-        // Mobile legt nur neue Messungen an (kein Edit)
         upsertMeasurement(tsValue, sys, dia, null);
-
-        mSysInput.value = '';
-        mDiaInput.value = '';
+        mSysInput.value = "";
+        mDiaInput.value = "";
         setNowToTimestampMobile();
-
         renderAll();
         persistData();
-        setMobileView('list');
+        setMobileView("list");
       });
     }
 
     function renderMobileTable() {
       if (!mobileTableBody) return;
-      mobileTableBody.innerHTML = '';
+      mobileTableBody.innerHTML = "";
 
       if (measurements.length === 0) {
-        const tr = document.createElement('tr');
-        const td = document.createElement('td');
+        const tr = document.createElement("tr");
+        const td = document.createElement("td");
         td.colSpan = 4;
-        td.className = 'table-muted';
-        td.textContent = 'Noch keine Messungen erfasst.';
+        td.className = "table-muted";
+        td.textContent = "Noch keine Messungen erfasst.";
         tr.appendChild(td);
         mobileTableBody.appendChild(tr);
         return;
       }
 
       const n = measurements.length;
-      const sorted = measurements.slice().sort((a, b) =>
-        b.timestampRaw.localeCompare(a.timestampRaw)
-      );
+      const sorted = measurements
+        .slice()
+        .sort((a, b) => b.timestampRaw.localeCompare(a.timestampRaw));
 
       sorted.forEach((m, idx) => {
-        const tr = document.createElement('tr');
+        const tr = document.createElement("tr");
         const isHigh = m.sys >= 140 || m.dia >= 90;
-        if (isHigh) tr.classList.add('row-high');
+        if (isHigh) tr.classList.add("row-high");
 
-        const tdIndex = document.createElement('td');
+        const tdIndex = document.createElement("td");
         tdIndex.textContent = n - idx;
 
-        const tdTime = document.createElement('td');
+        const tdTime = document.createElement("td");
         tdTime.textContent = m.timestamp;
 
-        const tdSys = document.createElement('td');
+        const tdSys = document.createElement("td");
         tdSys.textContent = m.sys;
-        if (isHigh) tdSys.classList.add('value-high');
+        if (isHigh) tdSys.classList.add("value-high");
 
-        const tdDia = document.createElement('td');
+        const tdDia = document.createElement("td");
         tdDia.textContent = m.dia;
-        if (isHigh) tdDia.classList.add('value-high');
+        if (isHigh) tdDia.classList.add("value-high");
 
         tr.appendChild(tdIndex);
         tr.appendChild(tdTime);
@@ -2413,10 +2061,6 @@ function showApp() {
       });
     }
 
-    // ==========================
-    // Alles neu zeichnen (Desktop + Mobile)
-    // ==========================
-
     function renderAll() {
       renderDetailsTable();
       renderOverview();
@@ -2424,31 +2068,27 @@ function showApp() {
       renderMobileTable();
     }
 
-    // ==========================
-    // App-Initialisierung
-    // ==========================
-
     function initShared() {
-  if (measurements.length === 0) {
-    loadFromLocalStorage();
-  }
-
-  setCloudStatus("Cloud-Sync aktiv (angemeldeter Benutzer) – lade Daten...");
-  renderAll();
-  loadFromCloud();
-}
-
+      measurements.length = 0;
+      loadFromLocalStorage();
+      measurements.sort((a, b) =>
+        a.timestampRaw.localeCompare(b.timestampRaw)
+      );
+      renderAll();
+      setCloudStatus("Cloud-Sync aktiv – lade Daten...");
+      loadFromCloud();
+    }
 
     function initApp() {
       initShared();
       setNowToTimestamp();
-      if (timestampInput) timestampInput.focus();
+      timestampInput && timestampInput.focus();
     }
 
     function initMobileApp() {
       initShared();
       setNowToTimestampMobile();
-      if (mTimestampInput) mTimestampInput.focus();
+      mTimestampInput && mTimestampInput.focus();
     }
   </script>
 </body>
