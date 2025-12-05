@@ -1166,8 +1166,21 @@
     window.addEventListener("load", () => {
       auth.onAuthStateChanged((user) => {
         if (user) {
+          // Bei User-Wechsel State hart resetten
+          if (currentUserId !== user.uid) {
+            currentUserId = user.uid;
+            measurements.length = 0;
+            editIndex = null;
+            fileHandle = null;
+            cloudLoaded = false;
+          }
           showApp();
         } else {
+          currentUserId = null;
+          measurements.length = 0;
+          editIndex = null;
+          fileHandle = null;
+          cloudLoaded = false;
           showLogin();
         }
       });
@@ -1200,11 +1213,14 @@
       return STORAGE_KEY_BASE + user.uid; // z.B. blutdruck_measurements_v1_abc123
     }
 
-
     const measurements = [];
     let bpChart = null;
     let editIndex = null;
     let fileHandle = null;
+
+    // NEU: User- und Cloud-Status
+    let currentUserId = null;
+    let cloudLoaded = false;
 
     const timestampInput = document.getElementById("timestampInput");
     const sysInput = document.getElementById("sysInput");
@@ -1273,62 +1289,60 @@
     }
 
     function saveToLocalStorage() {
-    const key = getStorageKey();
-    if (!key) return; // kein eingeloggter User
-  
-    try {
-      const json = JSON.stringify(measurements);
-      localStorage.setItem(key, json);
-    } catch (e) {
-      console.error("Fehler beim Speichern in localStorage:", e);
-    }
-  }
+      const key = getStorageKey();
+      if (!key) return; // kein eingeloggter User
 
+      try {
+        const json = JSON.stringify(measurements);
+        localStorage.setItem(key, json);
+      } catch (e) {
+        console.error("Fehler beim Speichern in localStorage:", e);
+      }
+    }
 
     function clearLocalStorage() {
-    const key = getStorageKey();
-    if (!key) return;
-  
-    try {
-      localStorage.removeItem(key);
-    } catch (e) {
-      console.error("Fehler beim Löschen aus localStorage:", e);
-    }
-  }
+      const key = getStorageKey();
+      if (!key) return;
 
+      try {
+        localStorage.removeItem(key);
+      } catch (e) {
+        console.error("Fehler beim Löschen aus localStorage:", e);
+      }
+    }
 
     function loadFromLocalStorage() {
-    const key = getStorageKey();
-    if (!key) return;
-  
-    try {
-      const json = localStorage.getItem(key);
-      if (!json) return;
-      const arr = JSON.parse(json);
-      if (Array.isArray(arr)) {
-        arr.forEach((m) => {
-          if (
-            m &&
-            typeof m.timestampRaw === "string" &&
-            typeof m.timestamp === "string" &&
-            typeof m.sys === "number" &&
-            typeof m.dia === "number"
-          ) {
-            measurements.push(m);
-          }
-        });
-      }
-    } catch (e) {
-      console.error("Fehler beim Laden aus localStorage:", e);
-    }
-  }
+      const key = getStorageKey();
+      if (!key) return;
 
+      try {
+        const json = localStorage.getItem(key);
+        if (!json) return;
+        const arr = JSON.parse(json);
+        if (Array.isArray(arr)) {
+          arr.forEach((m) => {
+            if (
+              m &&
+              typeof m.timestampRaw === "string" &&
+              typeof m.timestamp === "string" &&
+              typeof m.sys === "number" &&
+              typeof m.dia === "number"
+            ) {
+              measurements.push(m);
+            }
+          });
+        }
+      } catch (e) {
+        console.error("Fehler beim Laden aus localStorage:", e);
+      }
+    }
 
     // Cloud (pro User)
     async function loadFromCloud() {
       const user = auth.currentUser;
       if (!user) {
         setCloudStatus("Nicht eingeloggt – keine Cloud-Daten.");
+        cloudLoaded = false;
         return;
       }
 
@@ -1336,12 +1350,21 @@
         const docRef = db.collection("users").doc(user.uid);
         const snap = await docRef.get();
         if (!snap.exists) {
+          // Kein Cloud-Dokument: lokale Daten werden verworfen, alles neu
+          measurements.length = 0;
+          renderAll();
+          saveToLocalStorage();
           setCloudStatus("Cloud-Sync aktiv – noch keine Daten in der Cloud.");
+          cloudLoaded = true;
           return;
         }
         const data = snap.data();
         if (!data || !Array.isArray(data.measurements)) {
+          measurements.length = 0;
+          renderAll();
+          saveToLocalStorage();
           setCloudStatus("Cloud-Sync aktiv – ungültige Daten in der Cloud.");
+          cloudLoaded = true;
           return;
         }
 
@@ -1365,11 +1388,13 @@
         setCloudStatus(
           "Cloud-Daten geladen: " + new Date().toLocaleString()
         );
+        cloudLoaded = true;
       } catch (e) {
         console.error("Fehler beim Laden aus der Cloud:", e);
         setCloudStatus(
           "Cloud-Fehler beim Laden: " + (e.message || String(e))
         );
+        cloudLoaded = false;
       }
     }
 
@@ -1377,6 +1402,12 @@
       const user = auth.currentUser;
       if (!user) {
         setCloudStatus("Nicht eingeloggt – keine Cloud-Speicherung.");
+        return;
+      }
+
+      // WICHTIG: Erst speichern, wenn wir wissen, was in der Cloud ist
+      if (!cloudLoaded) {
+        console.log("Cloud noch nicht geladen – überspringe Autosave.");
         return;
       }
 
