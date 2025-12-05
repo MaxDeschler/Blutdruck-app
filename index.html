@@ -909,6 +909,10 @@
                 <button id="connectFileBtn" class="btn btn-outline btn-sm">JSON-Datei auswählen / erstellen</button>
                 <span id="fileStatus" class="card-subtitle">Keine JSON-Datei verbunden.</span>
               </div>
+              <!-- NEU: Cloud-Status Desktop -->
+              <p id="cloudStatusDesktop" class="card-subtitle" style="margin-top:8px;">
+                Cloud-Sync: inaktiv
+              </p>
             </div>
 
             <div class="card">
@@ -1001,6 +1005,28 @@
         </div>
       </div>
 
+      <!-- MOBILE: Sync-Code & Cloud -->
+      <div class="form-group" style="margin-top:12px;">
+        <label for="mSyncCodeInput">Sync-Code (Cloud)</label>
+        <input
+          type="text"
+          id="mSyncCodeInput"
+          placeholder="z.B. MEINBLUTDRUCK2025"
+        />
+      </div>
+      <button
+        id="mSaveSyncCodeBtn"
+        class="btn btn-outline"
+        style="width:100%;justify-content:center;margin-top:6px;"
+      >
+        Sync-Code speichern
+      </button>
+
+      <!-- NEU: Cloud-Status Mobile -->
+      <p id="cloudStatusMobile" class="mobile-header-sub" style="margin-top:6px;">
+        Cloud-Sync: inaktiv
+      </p>
+
     </div>
   </div>
 
@@ -1017,11 +1043,11 @@
     const loginButton  = document.getElementById("loginButton");
     const loginError   = document.getElementById("loginError");
 
-    const desktopShell = document.querySelector(".app-shell");   // *** NEU: Desktop/Tablet-Container
-    const mobileShell  = document.querySelector(".mobile-shell"); // *** NEU: Mobile-Container
+    const desktopShell = document.querySelector(".app-shell");   // Desktop/Tablet-Container
+    const mobileShell  = document.querySelector(".mobile-shell"); // Mobile-Container
     const logoutButton = document.getElementById("logoutButton");
 
-    // *** NEU: einfache Mobile-Erkennung
+    // einfache Mobile-Erkennung
     const isMobile = /Mobi|Android|iPhone|iPod/i.test(navigator.userAgent) || window.innerWidth < 768;
 
     window.addEventListener("load", () => {
@@ -1080,7 +1106,7 @@
       if (isMobile) {
         if (desktopShell) desktopShell.style.display = "none";
         if (mobileShell)  mobileShell.style.display  = "block";
-        initMobileApp();  // *** NEU
+        initMobileApp();
       } else {
         if (mobileShell)  mobileShell.style.display  = "none";
         if (desktopShell) desktopShell.style.display = "flex";
@@ -1198,6 +1224,8 @@
     const syncCodeInput   = document.getElementById('syncCodeInput');
     const saveSyncCodeBtn = document.getElementById('saveSyncCodeBtn');
 
+    const cloudStatusDesktop = document.getElementById('cloudStatusDesktop');
+
     // ==========================
     // DOM-Elemente Mobile
     // ==========================
@@ -1211,6 +1239,19 @@
     const mobileViewInput   = document.getElementById('mobileViewInput');
     const mobileViewList    = document.getElementById('mobileViewList');
     const mobileTableBody   = document.querySelector('#mobileDataTable tbody');
+
+    const mSyncCodeInput    = document.getElementById('mSyncCodeInput');
+    const mSaveSyncCodeBtn  = document.getElementById('mSaveSyncCodeBtn');
+    const cloudStatusMobile = document.getElementById('cloudStatusMobile');
+
+    // ==========================
+    // Cloud-Status Helper
+    // ==========================
+
+    function setCloudStatus(text) {
+      if (cloudStatusDesktop) cloudStatusDesktop.textContent = text;
+      if (cloudStatusMobile)  cloudStatusMobile.textContent  = text;
+    }
 
     // ==========================
     // Datum / Uhrzeit
@@ -1293,6 +1334,9 @@
           if (syncCodeInput) {
             syncCodeInput.value = syncCode;
           }
+          if (mSyncCodeInput) {
+            mSyncCodeInput.value = syncCode;
+          }
         }
       } catch (e) {
         console.error('Fehler beim Laden des Sync-Codes:', e);
@@ -1309,6 +1353,33 @@
       } catch (e) {
         console.error('Fehler beim Speichern des Sync-Codes:', e);
       }
+    }
+
+    function handleSyncCodeSave(val) {
+      const trimmed = (val || '').trim();
+
+      if (!trimmed) {
+        if (!confirm('Leerer Sync-Code – Cloud-Synchronisation wird deaktiviert. Fortfahren?')) {
+          return;
+        }
+        syncCode = null;
+        saveSyncCodeToLocal();
+        if (syncCodeInput)  syncCodeInput.value = '';
+        if (mSyncCodeInput) mSyncCodeInput.value = '';
+        setCloudStatus('Cloud-Sync: inaktiv');
+        alert('Sync-Code entfernt. Daten werden nur lokal gespeichert.');
+        return;
+      }
+
+      syncCode = trimmed;
+      saveSyncCodeToLocal();
+
+      if (syncCodeInput)  syncCodeInput.value = syncCode;
+      if (mSyncCodeInput) mSyncCodeInput.value = syncCode;
+
+      setCloudStatus('Cloud-Sync aktiv (Code: ' + syncCode + ') – lade Daten...');
+      alert('Sync-Code gespeichert. Daten werden jetzt mit der Cloud synchronisiert.');
+      loadFromCloud();
     }
 
     // ==========================
@@ -1394,11 +1465,15 @@
         const docSnap = await docRef.get();
         if (!docSnap.exists) {
           console.log('Noch keine Cloud-Daten für diesen Sync-Code.');
+          setCloudStatus('Cloud-Sync aktiv (Code: ' + syncCode + ') – noch keine Cloud-Daten vorhanden.');
           return;
         }
 
         const data = docSnap.data();
-        if (!data || !Array.isArray(data.measurements)) return;
+        if (!data || !Array.isArray(data.measurements)) {
+          setCloudStatus('Cloud-Sync aktiv (Code: ' + syncCode + ') – ungültige Cloud-Daten.');
+          return;
+        }
 
         measurements.length = 0;
         data.measurements.forEach(m => {
@@ -1414,9 +1489,11 @@
         measurements.sort((a, b) => a.timestampRaw.localeCompare(b.timestampRaw));
         renderAll();
         saveToLocalStorage();
+        setCloudStatus('Cloud-Daten geladen: ' + new Date().toLocaleString());
         console.log('Daten aus Cloud geladen.');
       } catch (e) {
         console.error('Fehler beim Laden aus der Cloud:', e);
+        setCloudStatus('Cloud-Fehler beim Laden: ' + (e.message || e));
         alert('Fehler beim Laden aus der Cloud. Details in der Konsole.');
       }
     }
@@ -1431,9 +1508,12 @@
         await docRef.set({
           measurements: measurements
         });
+        const ts = new Date().toLocaleString();
+        setCloudStatus('Zuletzt in Cloud gespeichert: ' + ts + ' (Code: ' + syncCode + ')');
         console.log('Daten in Cloud gespeichert.');
       } catch (e) {
         console.error('Fehler beim Speichern in der Cloud:', e);
+        setCloudStatus('Cloud-Fehler beim Speichern: ' + (e.message || e));
       }
     }
 
@@ -1457,26 +1537,20 @@
 
     if (saveSyncCodeBtn) {
       saveSyncCodeBtn.addEventListener('click', () => {
-        const val = (syncCodeInput && syncCodeInput.value || '').trim();
-        if (!val) {
-          if (!confirm('Leerer Sync-Code – Cloud-Synchronisation wird deaktiviert. Fortfahren?')) {
-            return;
-          }
-          syncCode = null;
-          saveSyncCodeToLocal();
-          alert('Sync-Code entfernt. Daten werden nur lokal gespeichert.');
-          return;
-        }
+        const val = syncCodeInput ? syncCodeInput.value : '';
+        handleSyncCodeSave(val);
+      });
+    }
 
-        syncCode = val;
-        saveSyncCodeToLocal();
-        alert('Sync-Code gespeichert. Daten werden jetzt mit der Cloud synchronisiert.');
-        loadFromCloud();
+    if (mSaveSyncCodeBtn) {
+      mSaveSyncCodeBtn.addEventListener('click', () => {
+        const val = mSyncCodeInput ? mSyncCodeInput.value : '';
+        handleSyncCodeSave(val);
       });
     }
 
     // ==========================
-    // Hilfsfunktion: Messung anlegen/ändern (wird von Desktop & Mobile benutzt)
+    // Hilfsfunktion: Messung anlegen/ändern (Desktop & Mobile)
     // ==========================
 
     function upsertMeasurement(tsValue, sys, dia, index = null) {
@@ -2200,6 +2274,13 @@
         loadFromLocalStorage();
         loadSyncCodeFromLocal();
       }
+
+      if (syncCode) {
+        setCloudStatus('Cloud-Sync aktiv (Code: ' + syncCode + ') – lade Daten...');
+      } else {
+        setCloudStatus('Cloud-Sync: inaktiv');
+      }
+
       renderAll();
       if (syncCode) {
         loadFromCloud();
