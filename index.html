@@ -41,7 +41,7 @@
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
         "Segoe UI", sans-serif;
       color: var(--text-main);
-      background: radial-gradient(circle at top, #e0f2fe 0, #cbd5f5 45%, #93c5fd 100%);
+      background: radial-gradient(circle at top, #020617 0, #020617 25%, #0b1120 100%);
       display: flex;
       justify-content: center;
       padding: 24px;
@@ -62,6 +62,8 @@
       display: flex;
       width: 100%;
     }
+
+    /* Sidebar */
 
     .sidebar {
       width: 220px;
@@ -151,7 +153,7 @@
       background: #0b1120;
     }
 
-    .nav-button:hover:not(.active)) {
+    .nav-button:hover:not(.active) {
       background: rgba(31, 41, 55, 0.8);
     }
 
@@ -167,6 +169,8 @@
     .sidebar-footer strong {
       color: #e5e7eb;
     }
+
+    /* Main */
 
     .main {
       flex: 1;
@@ -449,7 +453,9 @@
 
     input[type="datetime-local"],
     input[type="number"],
-    input[type="text"] {
+    input[type="text"],
+    input[type="email"],
+    input[type="password"] {
       background: #ffffff;
       border-radius: 12px;
       border: 1px solid rgba(148, 163, 184, 0.7);
@@ -459,9 +465,7 @@
       min-width: 120px;
     }
 
-    input[type="datetime-local"]:focus,
-    input[type="number"]:focus,
-    input[type="text"]:focus {
+    input:focus {
       outline: none;
       border-color: var(--accent);
       box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.5);
@@ -483,10 +487,12 @@
       display: block;
     }
 
+    /* LOGIN OVERLAY */
+
     .login-overlay {
       position: fixed;
       inset: 0;
-      background: radial-gradient(circle at top, #020617, #0f172a);
+      background: radial-gradient(circle at center, #020617 0, #020617 40%, #020617 100%);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -496,31 +502,31 @@
     .login-card {
       background: #e5f3ff;
       border-radius: 24px;
-      padding: 24px 22px 20px;
-      max-width: 360px;
+      padding: 28px 26px 22px;
+      max-width: 420px;
       width: 90%;
       box-shadow: 0 24px 60px rgba(15, 23, 42, 0.6);
       border: 1px solid rgba(148, 163, 184, 0.9);
       text-align: center;
     }
 
-    .login-card h1 {
-      margin: 0 0 6px;
-      font-size: 1.2rem;
-      letter-spacing: 0.06em;
+    .login-title {
+      margin: 0 0 4px;
+      font-size: 1.3rem;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: var(--text-muted);
+      color: #64748b;
     }
 
     .login-subtitle {
-      margin: 0 0 14px;
-      font-size: 0.9rem;
+      margin: 0 0 18px;
+      font-size: 0.95rem;
       color: var(--text-main);
     }
 
     .login-input {
       width: 100%;
-      padding: 8px 12px;
+      padding: 10px 14px;
       border-radius: 999px;
       border: 1px solid rgba(148, 163, 184, 0.9);
       font-size: 0.9rem;
@@ -528,14 +534,14 @@
       outline: none;
     }
 
-    .login-input:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.5);
+    .login-input::placeholder {
+      color: #cbd5f5;
     }
 
     .login-button {
       width: 100%;
       justify-content: center;
+      margin-top: 4px;
       margin-bottom: 8px;
     }
 
@@ -555,6 +561,8 @@
         transform: translateY(0);
       }
     }
+
+    /* MOBILE SHELL */
 
     .mobile-shell {
       display: none;
@@ -660,8 +668,18 @@
   <!-- LOGIN -->
   <div id="loginOverlay" class="login-overlay">
     <div class="login-card">
-      <h1>Blutdruck-Tagebuch</h1>
-      <p class="login-subtitle">Bitte Passwort eingeben, um die App zu öffnen.</p>
+      <h1 class="login-title">BLUTDRUCK-TAGEBUCH</h1>
+      <p class="login-subtitle">
+        Bitte E-Mail-Adresse und Passwort eingeben, um die App zu öffnen.
+      </p>
+
+      <input
+        type="email"
+        id="loginEmailInput"
+        class="login-input"
+        placeholder="E-Mail-Adresse"
+        autocomplete="email"
+      />
 
       <input
         type="password"
@@ -676,7 +694,7 @@
       </button>
 
       <p id="loginError" class="login-error" style="display:none;">
-        Falsches Passwort – bitte versuch's nochmal.
+        Login fehlgeschlagen – bitte überprüfe deine Daten.
       </p>
     </div>
   </div>
@@ -727,7 +745,9 @@
               <div class="card-header">
                 <div>
                   <div class="card-title">Neue Messung</div>
-                  <div class="card-subtitle">Zeitstempel, systolischer & diastolischer Wert</div>
+                  <div class="card-subtitle">
+                    Zeitstempel, systolischer &amp; diastolischer Wert
+                  </div>
                 </div>
               </div>
               <div class="form-row">
@@ -765,7 +785,7 @@
               <div class="card-header">
                 <div>
                   <div class="card-title">Diagramm</div>
-                  <div class="card-subtitle">Verlauf & Trendlinien</div>
+                  <div class="card-subtitle">Verlauf &amp; Trendlinien</div>
                 </div>
               </div>
               <div class="chart-container">
@@ -778,9 +798,13 @@
                 <div class="card-header">
                   <div>
                     <div class="card-title">Letzte Messungen</div>
-                    <div class="card-subtitle">Die fünf aktuellsten Einträge</div>
+                    <div class="card-subtitle">
+                      Die fünf aktuellsten Einträge
+                    </div>
                   </div>
-                  <span class="pill pill-accent" id="totalCountPill">0 Messungen</span>
+                  <span class="pill pill-accent" id="totalCountPill">
+                    0 Messungen
+                  </span>
                 </div>
                 <div style="overflow-x:auto;">
                   <table id="last5Table">
@@ -807,7 +831,9 @@
                 <div class="card-header">
                   <div>
                     <div class="card-title">Mittelwerte</div>
-                    <div class="card-subtitle">Über alle gespeicherten Messungen</div>
+                    <div class="card-subtitle">
+                      Über alle gespeicherten Messungen
+                    </div>
                   </div>
                 </div>
                 <div class="stats-row">
@@ -842,13 +868,16 @@
             <div class="card">
               <div class="card-header">
                 <div>
-                  <div class="card-title">Speicherung & Cloud</div>
+                  <div class="card-title">Speicherung &amp; Cloud</div>
                   <div class="card-subtitle">
-                    Browser, optionale JSON-Datei & Firebase Cloud-Sync
+                    Browser, optionale JSON-Datei &amp; Firebase Cloud-Sync
                   </div>
                 </div>
               </div>
-              <div class="form-row" style="margin-bottom:0; align-items:flex-end;">
+              <div
+                class="form-row"
+                style="margin-bottom:0; align-items:flex-end;"
+              >
                 <button id="connectFileBtn" class="btn btn-outline btn-sm">
                   JSON-Datei auswählen / erstellen
                 </button>
@@ -856,7 +885,11 @@
                   Keine JSON-Datei verbunden.
                 </span>
               </div>
-              <p id="cloudStatusDesktop" class="card-subtitle" style="margin-top:8px;">
+              <p
+                id="cloudStatusDesktop"
+                class="card-subtitle"
+                style="margin-top:8px;"
+              >
                 Cloud-Sync: inaktiv
               </p>
             </div>
@@ -866,7 +899,7 @@
                 <div>
                   <div class="card-title">Alle Messungen</div>
                   <div class="card-subtitle">
-                    Volle Liste mit Bearbeitung & Import/Export
+                    Volle Liste mit Bearbeitung &amp; Import/Export
                   </div>
                 </div>
                 <div class="btn-row">
@@ -931,7 +964,7 @@
     <div class="mobile-card">
       <div class="mobile-header-title">Blutdruck-Tagebuch</div>
       <div class="mobile-header-sub">
-        Werte eingeben & Messungen ansehen
+        Werte eingeben &amp; Messungen ansehen
       </div>
 
       <div class="mobile-nav">
@@ -1012,16 +1045,13 @@
     const db = firebase.firestore();
     const auth = firebase.auth();
 
-    // E-Mail des Accounts, mit dem du dich einloggst
-    // → in Firebase Console anlegen und hier eintragen
-    const LOGIN_EMAIL = "max.baisch@gmail.com";
-
     // ==========================
     // DOM-Referenzen Login / Shells
     // ==========================
 
     const loginOverlay = document.getElementById("loginOverlay");
-    const loginInput = document.getElementById("loginPasswordInput");
+    const loginEmailInput = document.getElementById("loginEmailInput");
+    const loginPasswordInput = document.getElementById("loginPasswordInput");
     const loginButton = document.getElementById("loginButton");
     const loginError = document.getElementById("loginError");
 
@@ -1068,9 +1098,12 @@
       if (loginOverlay) loginOverlay.style.display = "flex";
       if (desktopShell) desktopShell.style.display = "none";
       if (mobileShell) mobileShell.style.display = "none";
-      if (loginInput) loginInput.value = "";
+
+      if (loginEmailInput) loginEmailInput.value = "";
+      if (loginPasswordInput) loginPasswordInput.value = "";
       if (loginError) loginError.style.display = "none";
-      if (loginInput) loginInput.focus();
+
+      if (loginEmailInput) loginEmailInput.focus();
     }
 
     function showApp() {
@@ -1087,24 +1120,28 @@
     }
 
     async function handleLogin() {
-      if (!loginInput) return;
-      const password = loginInput.value.trim();
-      if (!password) {
+      const email = loginEmailInput.value.trim();
+      const password = loginPasswordInput.value.trim();
+
+      if (!email || !password) {
         if (loginError) {
-          loginError.textContent = "Bitte Passwort eingeben.";
+          loginError.textContent = "Bitte E-Mail-Adresse und Passwort eingeben.";
           loginError.style.display = "block";
         }
         return;
       }
 
       try {
-        await auth.signInWithEmailAndPassword(LOGIN_EMAIL, password);
+        await auth.signInWithEmailAndPassword(email, password);
         // onAuthStateChanged übernimmt showApp
       } catch (e) {
         console.error("Login-Fehler:", e);
         if (loginError) {
-          if (e.code === "auth/wrong-password") {
-            loginError.textContent = "Falsches Passwort – bitte versuch's nochmal.";
+          if (e.code === "auth/user-not-found") {
+            loginError.textContent =
+              "Kein Benutzer mit dieser E-Mail gefunden.";
+          } else if (e.code === "auth/wrong-password") {
+            loginError.textContent = "Falsches Passwort.";
           } else {
             loginError.textContent =
               "Login fehlgeschlagen: " + (e.message || e.code || "");
@@ -1135,8 +1172,11 @@
       if (loginButton) {
         loginButton.addEventListener("click", handleLogin);
       }
-      if (loginInput) {
-        loginInput.addEventListener("keydown", (e) => {
+      if (loginEmailInput && loginPasswordInput) {
+        loginEmailInput.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") handleLogin();
+        });
+        loginPasswordInput.addEventListener("keydown", (e) => {
           if (e.key === "Enter") handleLogin();
         });
       }
