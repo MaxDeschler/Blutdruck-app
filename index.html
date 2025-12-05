@@ -54,12 +54,13 @@
       border: 1px solid rgba(148, 163, 184, 0.7);
       box-shadow: 0 24px 60px rgba(15, 23, 42, 0.25);
       overflow: hidden;
-      display: none; /* Desktop/Tablet-App – wird per JS angezeigt */
+      display: none; /* wird per JS angezeigt */
     }
 
     .layout {
       display: flex;
       width: 100%;
+      min-height: 0;
     }
 
     /* Sidebar links */
@@ -178,6 +179,7 @@
       display: flex;
       flex-direction: column;
       gap: 12px;
+      min-width: 0;
     }
 
     header.main-header {
@@ -192,6 +194,7 @@
       flex-direction: column;
       gap: 14px;
       flex: 1;
+      min-height: 0;
     }
 
     .view {
@@ -217,6 +220,7 @@
       align-items: baseline;
       margin-bottom: 8px;
       gap: 8px;
+      flex-wrap: wrap;
     }
 
     .card-title {
@@ -254,6 +258,9 @@
     }
 
     @media (max-width: 900px) {
+      body {
+        padding: 12px;
+      }
       .app-shell {
         flex-direction: column;
       }
@@ -265,12 +272,34 @@
       }
       .nav-list {
         flex-direction: row;
+        flex-wrap: wrap;
       }
       .main {
-        padding: 14px;
+        padding: 12px;
       }
       .overview-grid {
         grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .form-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .form-group {
+        width: 100%;
+      }
+      input[type="datetime-local"],
+      input[type="number"],
+      input[type="text"] {
+        width: 100%;
+      }
+      table {
+        font-size: 0.75rem;
+      }
+      th, td {
+        padding: 4px 6px;
       }
     }
 
@@ -361,6 +390,21 @@
     }
 
     .row-high td.value-high {
+      color: var(--danger);
+      font-weight: 600;
+    }
+
+    .bp-category {
+      font-size: 0.75rem;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: var(--surface-muted);
+      border: 1px solid rgba(148, 163, 184, 0.7);
+    }
+
+    .bp-category-high {
+      background: var(--danger-soft);
+      border-color: var(--danger);
       color: var(--danger);
       font-weight: 600;
     }
@@ -476,6 +520,12 @@
       box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.5);
     }
 
+    .form-error {
+      margin-top: 4px;
+      font-size: 0.78rem;
+      color: var(--danger);
+    }
+
     /* Diagramm */
     .chart-container {
       margin-top: 10px;
@@ -566,159 +616,6 @@
         transform: translateY(0);
       }
     }
-
-    /* --- Basis-Layout --- */
-    body {
-      margin: 0;
-      padding: 0;
-    }
-
-    .app-container {
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 1rem;
-    }
-
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.5rem;
-    }
-
-    .table-wrapper {
-      width: 100%;
-      overflow-x: auto;
-    }
-
-    button,
-    input,
-    select,
-    textarea {
-      font-size: 1rem;
-      padding: 0.5rem 0.75rem;
-      border-radius: 0.5rem;
-      box-sizing: border-box;
-    }
-
-    @media (max-width: 768px) {
-      .app-container {
-        padding: 0.5rem;
-      }
-
-      .grid-2 {
-        grid-template-columns: 1fr;
-      }
-
-      h1, h2, h3 {
-        text-align: center;
-      }
-
-      form,
-      .card,
-      .panel,
-      .chart-container {
-        width: 100%;
-      }
-
-      input,
-      select,
-      button,
-      textarea {
-        width: 100%;
-        margin-bottom: 0.5rem;
-      }
-
-      table {
-        font-size: 0.85rem;
-      }
-    }
-
-    /* ==============================
-       MOBILE-SHELL – EINFACHE HANDY-ANSICHT
-       ============================== */
-
-    .mobile-shell {
-      display: none; /* wird per JS ein-/ausgeblendet */
-      width: 100%;
-      max-width: 480px;
-      margin: 0 auto;
-      padding: 12px;
-    }
-
-    .mobile-card {
-      background: var(--surface);
-      border-radius: 18px;
-      border: 1px solid var(--border-subtle);
-      padding: 12px 14px 14px;
-      box-shadow: 0 14px 30px rgba(148, 163, 184, 0.4);
-      margin-bottom: 12px;
-    }
-
-    .mobile-header-title {
-      font-size: 1.1rem;
-      font-weight: 600;
-      margin-bottom: 4px;
-    }
-
-    .mobile-header-sub {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-    }
-
-    .mobile-nav {
-      display: flex;
-      gap: 8px;
-      margin: 10px 0 12px;
-    }
-
-    .mobile-tab {
-      flex: 1;
-      border-radius: 999px;
-      border: 1px solid rgba(148, 163, 184, 0.8);
-      background: var(--surface-muted);
-      font-size: 0.9rem;
-      padding: 6px 10px;
-      cursor: pointer;
-    }
-
-    .mobile-tab.active {
-      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
-      color: #0b1120;
-      box-shadow: 0 8px 18px rgba(56, 189, 248, 0.4);
-      border-color: transparent;
-    }
-
-    .mobile-view {
-      display: none;
-    }
-
-    .mobile-view.active {
-      display: block;
-    }
-
-    .mobile-table-wrapper {
-      max-height: 60vh;
-      overflow-y: auto;
-      border-radius: 12px;
-      border: 1px solid rgba(148, 163, 184, 0.5);
-      background: #fff;
-    }
-
-    .mobile-table-wrapper table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    .mobile-table-wrapper th,
-    .mobile-table-wrapper td {
-      padding: 6px 8px;
-      font-size: 0.85rem;
-      border-bottom: 1px solid rgba(148, 163, 184, 0.4);
-    }
-
-    .mobile-table-wrapper tr.row-high {
-      background: var(--danger-soft);
-    }
   </style>
 </head>
 <body>
@@ -746,7 +643,7 @@
     </div>
   </div>
 
-  <!-- DESKTOP / TABLET APP -->
+  <!-- APP (Desktop + Mobile via CSS) -->
   <div class="app-shell">
     <div class="layout">
       <aside class="sidebar">
@@ -816,6 +713,7 @@
                   </div>
                 </div>
               </div>
+              <p id="formError" class="form-error" style="display:none;"></p>
             </div>
 
             <div class="card">
@@ -909,7 +807,6 @@
                 <button id="connectFileBtn" class="btn btn-outline btn-sm">JSON-Datei auswählen / erstellen</button>
                 <span id="fileStatus" class="card-subtitle">Keine JSON-Datei verbunden.</span>
               </div>
-              <!-- NEU: Cloud-Status Desktop -->
               <p id="cloudStatusDesktop" class="card-subtitle" style="margin-top:8px;">
                 Cloud-Sync: inaktiv
               </p>
@@ -939,11 +836,12 @@
                       <th>Zeitstempel</th>
                       <th>Sys</th>
                       <th>Dia</th>
+                      <th>Kategorie</th>
                       <th>Aktionen</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr><td colspan="5" class="table-muted">Noch keine Messungen erfasst.</td></tr>
+                    <tr><td colspan="6" class="table-muted">Noch keine Messungen erfasst.</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -951,82 +849,6 @@
           </section>
         </main>
       </div>
-    </div>
-  </div>
-
-  <!-- ==========================
-       MOBILE-APP: EINFACH & FINGERFREUNDLICH
-       ========================== -->
-  <div class="mobile-shell">
-    <div class="mobile-card">
-      <div class="mobile-header-title">Blutdruck-Tagebuch</div>
-      <div class="mobile-header-sub">Werte eingeben & Messungen ansehen</div>
-
-      <div class="mobile-nav">
-        <button id="mobileTabInput" class="mobile-tab active">Eingabe</button>
-        <button id="mobileTabList" class="mobile-tab">Messungen</button>
-      </div>
-
-      <!-- MOBILE: Eingabe -->
-      <div id="mobileViewInput" class="mobile-view active">
-        <div class="form-group" style="margin-bottom:8px;">
-          <label for="mTimestampInput">Zeitstempel</label>
-          <input type="datetime-local" id="mTimestampInput" />
-        </div>
-        <div class="form-group" style="margin-bottom:8px;">
-          <label for="mSysInput">Systolisch (mmHg)</label>
-          <input type="number" id="mSysInput" min="50" max="250" />
-        </div>
-        <div class="form-group" style="margin-bottom:12px;">
-          <label for="mDiaInput">Diastolisch (mmHg)</label>
-          <input type="number" id="mDiaInput" min="30" max="150" />
-        </div>
-        <button id="mAddBtn" class="btn btn-primary" style="width:100%;justify-content:center;">
-          Messung speichern
-        </button>
-      </div>
-
-      <!-- MOBILE: Liste -->
-      <div id="mobileViewList" class="mobile-view">
-        <div class="mobile-table-wrapper">
-          <table id="mobileDataTable">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Zeit</th>
-                <th>Sys</th>
-                <th>Dia</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr><td colspan="4" class="table-muted">Noch keine Messungen erfasst.</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- MOBILE: Sync-Code & Cloud -->
-      <div class="form-group" style="margin-top:12px;">
-        <label for="mSyncCodeInput">Sync-Code (Cloud)</label>
-        <input
-          type="text"
-          id="mSyncCodeInput"
-          placeholder="z.B. MEINBLUTDRUCK2025"
-        />
-      </div>
-      <button
-        id="mSaveSyncCodeBtn"
-        class="btn btn-outline"
-        style="width:100%;justify-content:center;margin-top:6px;"
-      >
-        Sync-Code speichern
-      </button>
-
-      <!-- NEU: Cloud-Status Mobile -->
-      <p id="cloudStatusMobile" class="mobile-header-sub" style="margin-top:6px;">
-        Cloud-Sync: inaktiv
-      </p>
-
     </div>
   </div>
 
@@ -1043,12 +865,8 @@
     const loginButton  = document.getElementById("loginButton");
     const loginError   = document.getElementById("loginError");
 
-    const desktopShell = document.querySelector(".app-shell");   // Desktop/Tablet-Container
-    const mobileShell  = document.querySelector(".mobile-shell"); // Mobile-Container
+    const desktopShell = document.querySelector(".app-shell");
     const logoutButton = document.getElementById("logoutButton");
-
-    // einfache Mobile-Erkennung
-    const isMobile = /Mobi|Android|iPhone|iPod/i.test(navigator.userAgent) || window.innerWidth < 768;
 
     window.addEventListener("load", () => {
       if (loginButton && loginInput) {
@@ -1075,7 +893,6 @@
         showApp();
       } else {
         if (desktopShell) desktopShell.style.display = "none";
-        if (mobileShell)  mobileShell.style.display  = "none";
         if (loginOverlay) loginOverlay.style.display = "flex";
         if (loginInput)   loginInput.focus();
       }
@@ -1102,16 +919,8 @@
 
     function showApp() {
       if (loginOverlay) loginOverlay.style.display = "none";
-
-      if (isMobile) {
-        if (desktopShell) desktopShell.style.display = "none";
-        if (mobileShell)  mobileShell.style.display  = "block";
-        initMobileApp();
-      } else {
-        if (mobileShell)  mobileShell.style.display  = "none";
-        if (desktopShell) desktopShell.style.display = "flex";
-        initApp();
-      }
+      if (desktopShell) desktopShell.style.display = "flex";
+      initApp();
     }
 
     function handleLogout() {
@@ -1122,8 +931,6 @@
       }
 
       if (desktopShell) desktopShell.style.display = "none";
-      if (mobileShell)  mobileShell.style.display  = "none";
-
       if (loginOverlay) loginOverlay.style.display = "flex";
 
       if (loginInput) {
@@ -1154,20 +961,24 @@
     const db = firebase.firestore();
 
     // ==========================
-    // Basis-Variablen
+    // Basis-Variablen / Konstanten
     // ==========================
 
     const STORAGE_KEY = 'blutdruck_measurements_v1';
     const SYNC_CODE_KEY = 'blutdruck_sync_code_v1';
+
+    const HIGH_SYS = 140;
+    const HIGH_DIA = 90;
 
     const measurements = [];
     let bpChart = null;
     let editIndex = null;
     let fileHandle = null;
     let syncCode = null;
+    let cloudSaveTimeout = null;
 
     // ==========================
-    // View-Handling Desktop
+    // View-Handling
     // ==========================
 
     const navButtons = document.querySelectorAll('.nav-button');
@@ -1194,7 +1005,7 @@
     }
 
     // ==========================
-    // DOM-Elemente Desktop
+    // DOM-Elemente
     // ==========================
 
     const timestampInput = document.getElementById('timestampInput');
@@ -1205,6 +1016,7 @@
     const dataTableBody  = document.querySelector('#dataTable tbody');
     const last5TableBody = document.querySelector('#last5Table tbody');
     const chartCanvas    = document.getElementById('bpChart');
+    const formError      = document.getElementById('formError');
 
     const exportJsonBtn  = document.getElementById('exportJsonBtn');
     const exportCsvBtn   = document.getElementById('exportCsvBtn');
@@ -1227,58 +1039,30 @@
     const cloudStatusDesktop = document.getElementById('cloudStatusDesktop');
 
     // ==========================
-    // DOM-Elemente Mobile
-    // ==========================
-
-    const mTimestampInput   = document.getElementById('mTimestampInput');
-    const mSysInput         = document.getElementById('mSysInput');
-    const mDiaInput         = document.getElementById('mDiaInput');
-    const mAddBtn           = document.getElementById('mAddBtn');
-    const mobileTabInput    = document.getElementById('mobileTabInput');
-    const mobileTabList     = document.getElementById('mobileTabList');
-    const mobileViewInput   = document.getElementById('mobileViewInput');
-    const mobileViewList    = document.getElementById('mobileViewList');
-    const mobileTableBody   = document.querySelector('#mobileDataTable tbody');
-
-    const mSyncCodeInput    = document.getElementById('mSyncCodeInput');
-    const mSaveSyncCodeBtn  = document.getElementById('mSaveSyncCodeBtn');
-    const cloudStatusMobile = document.getElementById('cloudStatusMobile');
-
-    // ==========================
     // Cloud-Status Helper
     // ==========================
 
     function setCloudStatus(text) {
       if (cloudStatusDesktop) cloudStatusDesktop.textContent = text;
-      if (cloudStatusMobile)  cloudStatusMobile.textContent  = text;
     }
 
     // ==========================
     // Datum / Uhrzeit
     // ==========================
 
-    function setNowToTimestamp() {
-      if (!timestampInput) return;
-      const now = new Date();
+    function formatDateToLocalInput(date = new Date()) {
       const pad = (n) => String(n).padStart(2, '0');
-      const yyyy = now.getFullYear();
-      const mm   = pad(now.getMonth() + 1);
-      const dd   = pad(now.getDate());
-      const hh   = pad(now.getHours());
-      const mi   = pad(now.getMinutes());
-      timestampInput.value = `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
+      const yyyy = date.getFullYear();
+      const mm   = pad(date.getMonth() + 1);
+      const dd   = pad(date.getDate());
+      const hh   = pad(date.getHours());
+      const mi   = pad(date.getMinutes());
+      return `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
     }
 
-    function setNowToTimestampMobile() {
-      if (!mTimestampInput) return;
-      const now = new Date();
-      const pad = (n) => String(n).padStart(2, '0');
-      const yyyy = now.getFullYear();
-      const mm   = pad(now.getMonth() + 1);
-      const dd   = pad(now.getDate());
-      const hh   = pad(now.getHours());
-      const mi   = pad(now.getMinutes());
-      mTimestampInput.value = `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
+    function setNowToTimestamp() {
+      if (!timestampInput) return;
+      timestampInput.value = formatDateToLocalInput();
     }
 
     // ==========================
@@ -1308,6 +1092,7 @@
         if (!json) return;
         const arr = JSON.parse(json);
         if (Array.isArray(arr)) {
+          measurements.length = 0;
           arr.forEach(m => {
             if (m && typeof m.timestampRaw === 'string' &&
                 typeof m.timestamp === 'string' &&
@@ -1316,6 +1101,7 @@
               measurements.push(m);
             }
           });
+          measurements.sort((a, b) => a.timestampRaw.localeCompare(b.timestampRaw));
         }
       } catch (e) {
         console.error('Fehler beim Laden aus localStorage:', e);
@@ -1333,9 +1119,6 @@
           syncCode = stored;
           if (syncCodeInput) {
             syncCodeInput.value = syncCode;
-          }
-          if (mSyncCodeInput) {
-            mSyncCodeInput.value = syncCode;
           }
         }
       } catch (e) {
@@ -1364,8 +1147,7 @@
         }
         syncCode = null;
         saveSyncCodeToLocal();
-        if (syncCodeInput)  syncCodeInput.value = '';
-        if (mSyncCodeInput) mSyncCodeInput.value = '';
+        if (syncCodeInput) syncCodeInput.value = '';
         setCloudStatus('Cloud-Sync: inaktiv');
         alert('Sync-Code entfernt. Daten werden nur lokal gespeichert.');
         return;
@@ -1374,8 +1156,7 @@
       syncCode = trimmed;
       saveSyncCodeToLocal();
 
-      if (syncCodeInput)  syncCodeInput.value = syncCode;
-      if (mSyncCodeInput) mSyncCodeInput.value = syncCode;
+      if (syncCodeInput) syncCodeInput.value = syncCode;
 
       setCloudStatus('Cloud-Sync aktiv (Code: ' + syncCode + ') – lade Daten...');
       alert('Sync-Code gespeichert. Daten werden jetzt mit der Cloud synchronisiert.');
@@ -1518,7 +1299,7 @@
     }
 
     // ==========================
-    // Persistenz
+    // Persistenz (mit Debounce für Cloud)
     // ==========================
 
     function persistData() {
@@ -1526,7 +1307,12 @@
       if (fileHandle) {
         saveToJsonFile();
       }
-      saveToCloud();
+      if (syncCode) {
+        if (cloudSaveTimeout) clearTimeout(cloudSaveTimeout);
+        cloudSaveTimeout = setTimeout(() => {
+          saveToCloud();
+        }, 2000);
+      }
     }
 
     if (connectFileBtn) {
@@ -1542,15 +1328,19 @@
       });
     }
 
-    if (mSaveSyncCodeBtn) {
-      mSaveSyncCodeBtn.addEventListener('click', () => {
-        const val = mSyncCodeInput ? mSyncCodeInput.value : '';
-        handleSyncCodeSave(val);
-      });
+    // ==========================
+    // Hilfsfunktion: Blutdruck-Kategorie
+    // ==========================
+
+    function classifyBP(sys, dia) {
+      if (sys < 120 && dia < 80) return 'normal';
+      if (sys < 130 && dia < 85) return 'hoch normal';
+      if (sys >= HIGH_SYS || dia >= HIGH_DIA) return 'hoch (bitte beobachten)';
+      return 'leicht erhöht';
     }
 
     // ==========================
-    // Hilfsfunktion: Messung anlegen/ändern (Desktop & Mobile)
+    // Hilfsfunktion: Messung anlegen/ändern
     // ==========================
 
     function upsertMeasurement(tsValue, sys, dia, index = null) {
@@ -1574,23 +1364,32 @@
     }
 
     // ==========================
-    // Formular / Eingabe Desktop
+    // Formular / Eingabe
     // ==========================
 
     if (addUpdateBtn) {
       addUpdateBtn.addEventListener('click', () => {
+        if (formError) {
+          formError.style.display = 'none';
+          formError.textContent = '';
+        }
+
         const tsValue = timestampInput.value;
         const sys = parseInt(sysInput.value, 10);
         const dia = parseInt(diaInput.value, 10);
 
         if (!tsValue) {
-          alert('Bitte einen Zeitstempel eingeben.');
+          showFormError('Bitte einen Zeitstempel eingeben.');
           timestampInput.focus();
           return;
         }
         if (isNaN(sys) || isNaN(dia)) {
-          alert('Bitte sowohl systolischen als auch diastolischen Wert eingeben.');
+          showFormError('Bitte sowohl systolischen als auch diastolischen Wert eingeben.');
           if (isNaN(sys)) sysInput.focus(); else diaInput.focus();
+          return;
+        }
+        if (sys < 50 || sys > 260 || dia < 30 || dia > 160) {
+          showFormError('Die eingegebenen Werte wirken unplausibel. Bitte prüfen.');
           return;
         }
 
@@ -1600,6 +1399,15 @@
         renderAll();
         persistData();
       });
+    }
+
+    function showFormError(msg) {
+      if (!formError) {
+        alert(msg);
+        return;
+      }
+      formError.textContent = msg;
+      formError.style.display = 'block';
     }
 
     if (cancelEditBtn) {
@@ -1615,6 +1423,10 @@
       editIndex = null;
       if (addUpdateBtn) addUpdateBtn.textContent = 'Messung hinzufügen';
       if (cancelEditBtn) cancelEditBtn.style.display = 'none';
+      if (formError) {
+        formError.style.display = 'none';
+        formError.textContent = '';
+      }
       if (timestampInput) timestampInput.focus();
     }
 
@@ -1640,7 +1452,7 @@
     }
 
     // ==========================
-    // Details-Tabelle Desktop
+    // Details-Tabelle
     // ==========================
 
     function renderDetailsTable() {
@@ -1650,7 +1462,7 @@
       if (measurements.length === 0) {
         const tr = document.createElement('tr');
         const td = document.createElement('td');
-        td.colSpan = 5;
+        td.colSpan = 6;
         td.className = 'table-muted';
         td.textContent = 'Noch keine Messungen erfasst.';
         tr.appendChild(td);
@@ -1659,18 +1471,18 @@
       }
 
       const n = measurements.length;
-      const sorted = measurements.slice().sort((a, b) =>
-        b.timestampRaw.localeCompare(a.timestampRaw)
-      );
 
-      sorted.forEach((m, idx) => {
+      // measurements ist bereits nach timestampRaw aufsteigend sortiert
+      // -> wir gehen rückwärts für neueste oben
+      for (let i = n - 1; i >= 0; i--) {
+        const m = measurements[i];
         const tr = document.createElement('tr');
-        const isHigh = m.sys >= 140 || m.dia >= 90;
+        const isHigh = m.sys >= HIGH_SYS || m.dia >= HIGH_DIA;
         if (isHigh) {
           tr.classList.add('row-high');
         }
 
-        const displayIndex = n - idx;
+        const displayIndex = i + 1;
 
         const tdIndex = document.createElement('td');
         tdIndex.textContent = displayIndex;
@@ -1686,6 +1498,13 @@
         tdDia.textContent = m.dia;
         if (isHigh) tdDia.classList.add('value-high');
 
+        const tdCategory = document.createElement('td');
+        const category = classifyBP(m.sys, m.dia);
+        const catSpan = document.createElement('span');
+        catSpan.textContent = category;
+        catSpan.className = 'bp-category' + (isHigh ? ' bp-category-high' : '');
+        tdCategory.appendChild(catSpan);
+
         const tdActions = document.createElement('td');
         const btnRow = document.createElement('div');
         btnRow.className = 'btn-row';
@@ -1693,7 +1512,7 @@
         const editButton = document.createElement('button');
         editButton.textContent = 'Bearbeiten';
         editButton.className = 'btn btn-outline btn-sm';
-        const originalIndex = measurements.indexOf(m);
+        const originalIndex = i;
         editButton.onclick = () => startEdit(originalIndex);
 
         const deleteButton = document.createElement('button');
@@ -1709,9 +1528,10 @@
         tr.appendChild(tdTime);
         tr.appendChild(tdSys);
         tr.appendChild(tdDia);
+        tr.appendChild(tdCategory);
         tr.appendChild(tdActions);
         dataTableBody.appendChild(tr);
-      });
+      }
     }
 
     function startEdit(index) {
@@ -1723,6 +1543,10 @@
       editIndex = index;
       if (addUpdateBtn) addUpdateBtn.textContent = 'Messung aktualisieren';
       if (cancelEditBtn) cancelEditBtn.style.display = 'inline-block';
+      if (formError) {
+        formError.style.display = 'none';
+        formError.textContent = '';
+      }
       if (timestampInput) timestampInput.focus();
       setActiveView('overview');
     }
@@ -1740,7 +1564,7 @@
     }
 
     // ==========================
-    // Übersicht Desktop
+    // Übersicht (letzte 5 + Mittelwerte)
     // ==========================
 
     function renderOverview() {
@@ -1758,7 +1582,7 @@
         const lastFive = measurements.slice(-5).reverse();
         lastFive.forEach((m, idx) => {
           const tr = document.createElement('tr');
-          const isHigh = m.sys >= 140 || m.dia >= 90;
+          const isHigh = m.sys >= HIGH_SYS || m.dia >= HIGH_DIA;
           if (isHigh) tr.classList.add('row-high');
 
           const tdIndex = document.createElement('td');
@@ -1836,32 +1660,43 @@
 
     function updateChart() {
       if (!chartCanvas) return;
+
+      if (measurements.length === 0) {
+        if (bpChart) {
+          bpChart.destroy();
+          bpChart = null;
+        }
+        return;
+      }
+
       const labels    = measurements.map(m => m.timestamp);
       const sysValues = measurements.map(m => m.sys);
       const diaValues = measurements.map(m => m.dia);
 
-      const sysTrend = calcTrend(sysValues);
-      const diaTrend = calcTrend(diaValues);
+      const datasets = [
+        {
+          label: 'Systolisch',
+          data: sysValues,
+          tension: 0.2,
+          fill: false,
+          borderWidth: 2,
+          pointRadius: 4
+        },
+        {
+          label: 'Diastolisch',
+          data: diaValues,
+          tension: 0.2,
+          fill: false,
+          borderWidth: 2,
+          pointRadius: 4
+        }
+      ];
 
-      const data = {
-        labels: labels,
-        datasets: [
-          {
-            label: 'Systolisch',
-            data: sysValues,
-            tension: 0.2,
-            fill: false,
-            borderWidth: 2,
-            pointRadius: 4
-          },
-          {
-            label: 'Diastolisch',
-            data: diaValues,
-            tension: 0.2,
-            fill: false,
-            borderWidth: 2,
-            pointRadius: 4
-          },
+      const hasTrend = measurements.length >= 3;
+      if (hasTrend) {
+        const sysTrend = calcTrend(sysValues);
+        const diaTrend = calcTrend(diaValues);
+        datasets.push(
           {
             label: 'Trend Systolisch',
             data: sysTrend,
@@ -1878,7 +1713,12 @@
             pointRadius: 0,
             fill: false
           }
-        ]
+        );
+      }
+
+      const data = {
+        labels: labels,
+        datasets: datasets
       };
 
       const options = {
@@ -2153,116 +1993,13 @@
     }
 
     // ==========================
-    // MOBILE-LOGIK: Tabs & Liste
-    // ==========================
-
-    function setMobileView(view) {
-      if (!mobileTabInput || !mobileTabList || !mobileViewInput || !mobileViewList) return;
-
-      if (view === 'input') {
-        mobileTabInput.classList.add('active');
-        mobileTabList.classList.remove('active');
-        mobileViewInput.classList.add('active');
-        mobileViewList.classList.remove('active');
-      } else {
-        mobileTabInput.classList.remove('active');
-        mobileTabList.classList.add('active');
-        mobileViewInput.classList.remove('active');
-        mobileViewList.classList.add('active');
-      }
-    }
-
-    if (mobileTabInput && mobileTabList) {
-      mobileTabInput.addEventListener('click', () => setMobileView('input'));
-      mobileTabList.addEventListener('click', () => setMobileView('list'));
-    }
-
-    if (mAddBtn) {
-      mAddBtn.addEventListener('click', () => {
-        const tsValue = mTimestampInput.value;
-        const sys = parseInt(mSysInput.value, 10);
-        const dia = parseInt(mDiaInput.value, 10);
-
-        if (!tsValue) {
-          alert('Bitte einen Zeitstempel eingeben.');
-          mTimestampInput.focus();
-          return;
-        }
-        if (isNaN(sys) || isNaN(dia)) {
-          alert('Bitte sowohl systolischen als auch diastolischen Wert eingeben.');
-          if (isNaN(sys)) mSysInput.focus(); else mDiaInput.focus();
-          return;
-        }
-
-        // Mobile legt nur neue Messungen an (kein Edit)
-        upsertMeasurement(tsValue, sys, dia, null);
-
-        mSysInput.value = '';
-        mDiaInput.value = '';
-        setNowToTimestampMobile();
-
-        renderAll();
-        persistData();
-        setMobileView('list');
-      });
-    }
-
-    function renderMobileTable() {
-      if (!mobileTableBody) return;
-      mobileTableBody.innerHTML = '';
-
-      if (measurements.length === 0) {
-        const tr = document.createElement('tr');
-        const td = document.createElement('td');
-        td.colSpan = 4;
-        td.className = 'table-muted';
-        td.textContent = 'Noch keine Messungen erfasst.';
-        tr.appendChild(td);
-        mobileTableBody.appendChild(tr);
-        return;
-      }
-
-      const n = measurements.length;
-      const sorted = measurements.slice().sort((a, b) =>
-        b.timestampRaw.localeCompare(a.timestampRaw)
-      );
-
-      sorted.forEach((m, idx) => {
-        const tr = document.createElement('tr');
-        const isHigh = m.sys >= 140 || m.dia >= 90;
-        if (isHigh) tr.classList.add('row-high');
-
-        const tdIndex = document.createElement('td');
-        tdIndex.textContent = n - idx;
-
-        const tdTime = document.createElement('td');
-        tdTime.textContent = m.timestamp;
-
-        const tdSys = document.createElement('td');
-        tdSys.textContent = m.sys;
-        if (isHigh) tdSys.classList.add('value-high');
-
-        const tdDia = document.createElement('td');
-        tdDia.textContent = m.dia;
-        if (isHigh) tdDia.classList.add('value-high');
-
-        tr.appendChild(tdIndex);
-        tr.appendChild(tdTime);
-        tr.appendChild(tdSys);
-        tr.appendChild(tdDia);
-        mobileTableBody.appendChild(tr);
-      });
-    }
-
-    // ==========================
-    // Alles neu zeichnen (Desktop + Mobile)
+    // Alles neu zeichnen
     // ==========================
 
     function renderAll() {
       renderDetailsTable();
       renderOverview();
       updateChart();
-      renderMobileTable();
     }
 
     // ==========================
@@ -2291,12 +2028,6 @@
       initShared();
       setNowToTimestamp();
       if (timestampInput) timestampInput.focus();
-    }
-
-    function initMobileApp() {
-      initShared();
-      setNowToTimestampMobile();
-      if (mTimestampInput) mTimestampInput.focus();
     }
   </script>
 </body>
