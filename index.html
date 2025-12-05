@@ -870,7 +870,7 @@
                 <div>
                   <div class="card-title">Speicherung &amp; Cloud</div>
                   <div class="card-subtitle">
-                    Browser, optionale JSON-Datei &amp; Firebase Cloud-Sync
+                    Optionale JSON-Datei &amp; Firebase Cloud-Sync
                   </div>
                 </div>
               </div>
@@ -1144,7 +1144,6 @@
 
       try {
         await auth.signInWithEmailAndPassword(email, password);
-        // onAuthStateChanged übernimmt showApp
       } catch (e) {
         console.error("Login-Fehler:", e);
         if (loginError) {
@@ -1165,11 +1164,21 @@
     async function handleLogout() {
       try {
         await auth.signOut();
-        measurements.length = 0;
-        renderAll();
       } catch (e) {
         console.error("Logout-Fehler:", e);
       }
+    }
+
+    function resetGlobalState() {
+      measurements.length = 0;
+      editIndex = null;
+      fileHandle = null;
+      cloudLoaded = false;
+      if (bpChart) {
+        bpChart.destroy();
+        bpChart = null;
+      }
+      renderAll();
     }
 
     window.addEventListener("load", () => {
@@ -1177,18 +1186,12 @@
         if (user) {
           if (currentUserId !== user.uid) {
             currentUserId = user.uid;
-            measurements.length = 0;
-            editIndex = null;
-            fileHandle = null;
-            cloudLoaded = false;
+            resetGlobalState();
           }
           showApp();
         } else {
           currentUserId = null;
-          measurements.length = 0;
-          editIndex = null;
-          fileHandle = null;
-          cloudLoaded = false;
+          resetGlobalState();
           showLogin();
         }
       });
@@ -1212,14 +1215,6 @@
     // ==========================
     // Gemeinsame App-Logik
     // ==========================
-
-    const STORAGE_KEY_BASE = "blutdruck_measurements_v1_";
-
-    function getStorageKey() {
-      const user = auth.currentUser;
-      if (!user) return null;
-      return STORAGE_KEY_BASE + user.uid;
-    }
 
     const timestampInput = document.getElementById("timestampInput");
     const sysInput = document.getElementById("sysInput");
@@ -1287,58 +1282,12 @@
       mTimestampInput.value = `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
     }
 
-    function saveToLocalStorage() {
-      const key = getStorageKey();
-      if (!key) return;
-
-      try {
-        const json = JSON.stringify(measurements);
-        localStorage.setItem(key, json);
-      } catch (e) {
-        console.error("Fehler beim Speichern in localStorage:", e);
-      }
-    }
-
-    function clearLocalStorage() {
-      const key = getStorageKey();
-      if (!key) return;
-
-      try {
-        localStorage.removeItem(key);
-      } catch (e) {
-        console.error("Fehler beim Löschen aus localStorage:", e);
-      }
-    }
-
-    function loadFromLocalStorage() {
-      const key = getStorageKey();
-      if (!key) return;
-
-      try {
-        const json = localStorage.getItem(key);
-        if (!json) return;
-        const arr = JSON.parse(json);
-        if (Array.isArray(arr)) {
-          arr.forEach((m) => {
-            if (
-              m &&
-              typeof m.timestampRaw === "string" &&
-              typeof m.timestamp === "string" &&
-              typeof m.sys === "number" &&
-              typeof m.dia === "number"
-            ) {
-              measurements.push(m);
-            }
-          });
-        }
-      } catch (e) {
-        console.error("Fehler beim Laden aus localStorage:", e);
-      }
-    }
-
-    // Cloud-Laden mit Fallback
-    async function loadFromCloudWithFallback() {
+    // Cloud (pro User), ohne localStorage-Fallback
+    async function loadFromCloud() {
       const user = auth.currentUser;
+      measurements.length = 0;
+      renderAll();
+
       if (!user) {
         setCloudStatus("Nicht eingeloggt – keine Cloud-Daten.");
         cloudLoaded = false;
@@ -1349,64 +1298,43 @@
         const docRef = db.collection("users").doc(user.uid);
         const snap = await docRef.get();
 
-        if (snap.exists) {
-          const data = snap.data();
-          if (data && Array.isArray(data.measurements)) {
-            measurements.length = 0;
-            data.measurements.forEach((m) => {
-              if (
-                m &&
-                typeof m.timestampRaw === "string" &&
-                typeof m.timestamp === "string" &&
-                typeof m.sys === "number" &&
-                typeof m.dia === "number"
-              ) {
-                measurements.push(m);
-              }
-            });
-            measurements.sort((a, b) =>
-              a.timestampRaw.localeCompare(b.timestampRaw)
-            );
-            renderAll();
-            saveToLocalStorage();
-            setCloudStatus(
-              "Cloud-Daten geladen: " + new Date().toLocaleString()
-            );
-            cloudLoaded = true;
-          } else {
-            // Ungültige Daten in der Cloud -> lieber sauber neu starten
-            measurements.length = 0;
-            clearLocalStorage();
-            saveToLocalStorage();
-            renderAll();
-            setCloudStatus(
-              "Cloud-Sync aktiv – ungültige Daten, starte leer."
-            );
-            cloudLoaded = true;
-          }
-        } else {
-          // Kein Dokument: User ist "frisch" -> lokale Daten verwerfen
-          measurements.length = 0;
-          clearLocalStorage();
-          saveToLocalStorage();
-          renderAll();
-          setCloudStatus(
-            "Cloud-Sync aktiv – noch keine Daten in der Cloud."
-          );
+        if (!snap.exists) {
+          setCloudStatus("Cloud-Sync aktiv – noch keine Daten in der Cloud.");
           cloudLoaded = true;
+          return;
         }
-      } catch (e) {
-        console.error("Fehler beim Laden aus der Cloud:", e);
-        setCloudStatus(
-          "Cloud-Fehler beim Laden – verwende lokale Daten (falls vorhanden)."
-        );
-        measurements.length = 0;
-        loadFromLocalStorage();
+
+        const data = snap.data();
+        if (!data || !Array.isArray(data.measurements)) {
+          setCloudStatus("Cloud-Sync aktiv – ungültige Daten, starte leer.");
+          cloudLoaded = true;
+          return;
+        }
+
+        data.measurements.forEach((m) => {
+          if (
+            m &&
+            typeof m.timestampRaw === "string" &&
+            typeof m.timestamp === "string" &&
+            typeof m.sys === "number" &&
+            typeof m.dia === "number"
+          ) {
+            measurements.push(m);
+          }
+        });
         measurements.sort((a, b) =>
           a.timestampRaw.localeCompare(b.timestampRaw)
         );
         renderAll();
-        // Cloud ist aktuell nicht verlässlich erreichbar
+        setCloudStatus(
+          "Cloud-Daten geladen: " + new Date().toLocaleString()
+        );
+        cloudLoaded = true;
+      } catch (e) {
+        console.error("Fehler beim Laden aus der Cloud:", e);
+        setCloudStatus(
+          "Cloud-Fehler beim Laden: " + (e.message || String(e))
+        );
         cloudLoaded = false;
       }
     }
@@ -1417,9 +1345,9 @@
         setCloudStatus("Nicht eingeloggt – keine Cloud-Speicherung.");
         return;
       }
-
       if (!cloudLoaded) {
-        console.log("Cloud noch nicht geladen – überspringe Autosave.");
+        // Wir haben die Cloud noch nicht erfolgreich gelesen -> nichts überschreiben
+        console.log("Cloud noch nicht geladen – überspringe Speichern.");
         return;
       }
 
@@ -1438,7 +1366,6 @@
     }
 
     function persistData() {
-      saveToLocalStorage();
       if (fileHandle) {
         saveToJsonFile();
       }
@@ -1493,7 +1420,6 @@
                 a.timestampRaw.localeCompare(b.timestampRaw)
               );
               renderAll();
-              saveToLocalStorage();
             }
           }
         } catch (e) {
@@ -1592,7 +1518,6 @@
         }
         measurements.length = 0;
         editIndex = null;
-        clearLocalStorage();
         renderAll();
         if (fileHandle) {
           await saveToJsonFile();
@@ -2174,11 +2099,9 @@
     }
 
     function initShared() {
-      measurements.length = 0;
-      cloudLoaded = false;
-      renderAll();
+      resetGlobalState();
       setCloudStatus("Cloud-Sync aktiv – lade Daten...");
-      loadFromCloudWithFallback();
+      loadFromCloud();
     }
 
     function initApp() {
